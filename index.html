@@ -940,7 +940,7 @@ h1,h2{font-family:'DM Serif Display',serif}
 <script>
 'use strict';
 
-// ══ CRYPTO ══════════════════════════════════════════════════
+// ══ CRYPTO ════════════════════════════════════════════════════
 const CRYPTO = {
   async deriveKey(password, salt) {
     const enc = new TextEncoder();
@@ -974,23 +974,15 @@ const CRYPTO = {
 };
 
 // ══ STATE ═════════════════════════════════════════════════════
-const DEFAULT_PASSWORD_HASH = 'Oliveira2026';
 let APP = {
   password: '',
   currentMonth: 'Abr/2026',
   months: {
     'Abr/2026': {
-      renda_fixa: 15000,
-      comissao: 5000,
-      gastos_fixos: 8564,
-      gastos_cartao: 10744,
-      investimentos_xp: 59730,
-      investimentos_nubank: 10600,
-      patrimonio_imovel: 433000,
-      divida_imovel: 239290,
-      divida_carro: 61140,
-      parcela_imovel: 2358,
-      parcela_carro: 2447,
+      renda_fixa: 15000, comissao: 5000, gastos_fixos: 8564,
+      gastos_cartao: 10744, investimentos_xp: 59730, investimentos_nubank: 10600,
+      patrimonio_imovel: 433000, divida_imovel: 239290, divida_carro: 61140,
+      parcela_imovel: 2358, parcela_carro: 2447,
       categorias: {
         'Compras Online': 2726, 'Alimentação fora': 1881, 'Viagem': 1076,
         'Combustível': 718, 'Serviços Pessoais': 476, 'Supermercado': 470,
@@ -1019,7 +1011,6 @@ const FB_CONFIG = {
   appId: "1:787602543958:web:7f1ff769de9ab04cbfb2f7"
 };
 
-let fbApp = null;
 let fbDb = null;
 let fbAuth = null;
 let fbUser = null;
@@ -1027,37 +1018,28 @@ let fbListener = null;
 
 function initFirebase() {
   try {
-    fbApp = firebase.initializeApp(FB_CONFIG);
+    firebase.initializeApp(FB_CONFIG);
     fbDb = firebase.database();
     fbAuth = firebase.auth();
-    // Escuta estado de autenticação
     fbAuth.onAuthStateChanged((user) => {
       fbUser = user;
-      const dot = document.getElementById('sync-dot');
-      const txt = document.getElementById('sync-status');
-      if (user && dot && txt) {
-        dot.className = 'sync-dot';
-        txt.textContent = 'Firebase autenticado · ' + (user.email || 'anônimo');
-      }
     });
   } catch(e) { console.warn('Firebase init error:', e); }
 }
 
-async function fbSignIn(email, password) {
-  if (!fbAuth) return false;
+async function fbSignIn(email, fbPassword) {
+  if (!fbAuth) return;
   try {
-    await fbAuth.signInWithEmailAndPassword(email, password);
-    return true;
+    await fbAuth.signInWithEmailAndPassword(email, fbPassword);
   } catch(e) {
-    // Se não existir, cria o usuário
-    if (e.code === 'auth/user-not-found') {
-      try {
-        await fbAuth.createUserWithEmailAndPassword(email, password);
-        return true;
-      } catch(e2) { return false; }
+    if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/invalid-email') {
+      try { await fbAuth.createUserWithEmailAndPassword(email, fbPassword); } catch(e2) {}
     }
-    return false;
   }
+}
+
+function fbPath() {
+  return fbUser ? `familia/${fbUser.uid}/dados` : 'familia/shared/dados';
 }
 
 async function saveData() {
@@ -1066,10 +1048,8 @@ async function saveData() {
     const enc = await CRYPTO.encrypt(APP, APP.password);
     localStorage.setItem('fo_data', enc);
     localStorage.setItem('fo_ts', Date.now().toString());
-    // Salva no Firebase com path do usuário autenticado
     if (fbDb) {
-      const path = fbUser ? `familia/${fbUser.uid}/dados` : 'familia/shared/dados';
-      await fbDb.ref(path).set({ enc, ts: Date.now() });
+      await fbDb.ref(fbPath()).set({ enc, ts: Date.now() });
     }
     setSyncStatus('ok');
     if (GDRIVE_TOKEN) gdriveAutoBackup();
@@ -1083,8 +1063,7 @@ async function loadData(password) {
   if (fbDb) {
     try {
       setSyncStatus('syncing');
-      const path = fbUser ? `familia/${fbUser.uid}/dados` : 'familia/shared/dados';
-      const snap = await fbDb.ref(path).get();
+      const snap = await fbDb.ref(fbPath()).get();
       if (snap.exists()) {
         const { enc } = snap.val();
         const dec = await CRYPTO.decrypt(enc, password);
@@ -1112,9 +1091,8 @@ async function loadData(password) {
 
 function startFirebaseSync() {
   if (!fbDb) return;
-  if (fbListener) fbListener();
-  const path = fbUser ? `familia/${fbUser.uid}/dados` : 'familia/shared/dados';
-  fbListener = fbDb.ref(path).on('value', async (snap) => {
+  if (fbListener) { fbDb.ref(fbPath()).off('value', fbListener); fbListener = null; }
+  fbListener = fbDb.ref(fbPath()).on('value', async (snap) => {
     if (!snap.exists() || !APP.password) return;
     try {
       const { enc, ts } = snap.val();
@@ -1134,112 +1112,85 @@ function startFirebaseSync() {
   });
 }
 
-async function saveData() {
-  if (!APP.password) return;
+// ══ GATE ══════════════════════════════════════════════════════
+const GATE_KEY = 'fo_gate';
+const DEFAULT_GATE = 'Familia2026';
+const GATE_SALT = new Uint8Array([66,82,85,68,69,95,71,65,84,69,95,50,48,50,54,33]);
+
+async function hashGate(password) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    {name:'PBKDF2', salt:GATE_SALT, iterations:100000, hash:'SHA-256'}, keyMaterial, 256
+  );
+  return Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function getGateHash() {
+  const stored = localStorage.getItem(GATE_KEY);
+  if (!stored || stored.length < 60) {
+    const h = await hashGate(DEFAULT_GATE);
+    localStorage.setItem(GATE_KEY, h);
+    return h;
+  }
+  return stored;
+}
+
+async function resetGate() {
+  localStorage.removeItem(GATE_KEY);
+  document.getElementById('gate-password').value = '';
+  document.getElementById('gate-error').style.display = 'none';
+  await getGateHash();
+  alert('Código resetado. Use: Familia2026');
+}
+
+async function checkGate() {
+  const pw = document.getElementById('gate-password').value.trim();
+  if (!pw) return;
+  const btn = document.querySelector('#screen-gate button[onclick="checkGate()"]');
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
   try {
-    const enc = await CRYPTO.encrypt(APP, APP.password);
-    // Salva local sempre (rápido)
-    localStorage.setItem('fo_data', enc);
-    // Salva no Firebase (sincronização entre dispositivos)
-    if (fbDb) {
-      await fbDb.ref('familia/dados').set({ enc, ts: Date.now() });
-      setSyncStatus('ok');
+    const stored = await getGateHash();
+    const entered = await hashGate(pw);
+    if (entered !== stored) {
+      document.getElementById('gate-error').style.display = 'block';
+      document.getElementById('gate-password').value = '';
     } else {
-      setSyncStatus('ok');
+      document.getElementById('gate-error').style.display = 'none';
+      showScreen('screen-login');
+      document.getElementById('login-password').focus();
     }
-    if (GDRIVE_TOKEN) gdriveAutoBackup();
-  } catch(e) { 
-    setSyncStatus('error');
-    console.error('saveData error:', e);
+  } finally {
+    if (btn) { btn.textContent = 'Continuar'; btn.disabled = false; }
   }
 }
 
-async function loadData(password) {
-  // Tenta carregar do Firebase primeiro (dados mais recentes)
-  if (fbDb) {
-    try {
-      setSyncStatus('syncing');
-      const snap = await fbDb.ref('familia/dados').get();
-      if (snap.exists()) {
-        const { enc } = snap.val();
-        const dec = await CRYPTO.decrypt(enc, password);
-        if (dec) {
-          APP = {...APP, ...dec, password};
-          localStorage.setItem('fo_data', enc); // atualiza local
-          return true;
-        } else {
-          return false; // senha errada
-        }
-      }
-    } catch(e) { console.warn('Firebase load error, falling back to local:', e); }
-  }
-  // Fallback: localStorage
-  const raw = localStorage.getItem('fo_data');
-  if (!raw) {
-    APP.password = password;
-    await saveData();
-    return true;
-  }
-  const dec = await CRYPTO.decrypt(raw, password);
-  if (!dec) return false;
-  APP = {...APP, ...dec, password};
-  return true;
+async function saveGate() {
+  const v = document.getElementById('new-gate').value.trim();
+  if (!v || v.length < 4) { alert('Código muito curto. Use pelo menos 4 caracteres.'); return; }
+  const h = await hashGate(v);
+  localStorage.setItem(GATE_KEY, h);
+  document.getElementById('new-gate').value = '';
+  alert('Código de acesso atualizado!');
 }
 
-function startFirebaseSync() {
-  if (!fbDb || !APP.password) return;
-  // Escuta mudanças em tempo real — atualiza app quando outro dispositivo salvar
-  if (fbListener) fbListener();
-  fbListener = fbDb.ref('familia/dados').on('value', async (snap) => {
-    if (!snap.exists() || !APP.password) return;
-    try {
-      const { enc, ts } = snap.val();
-      const localTs = parseInt(localStorage.getItem('fo_ts') || '0');
-      if (ts > localTs) {
-        const dec = await CRYPTO.decrypt(enc, APP.password);
-        if (dec) {
-          const pw = APP.password;
-          APP = {...APP, ...dec, password: pw};
-          localStorage.setItem('fo_data', enc);
-          localStorage.setItem('fo_ts', ts);
-          setSyncStatus('ok');
-          const el = document.getElementById('sync-status');
-          if (el) el.textContent = 'Sincronizado · ' + new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-        }
-      }
-    } catch(e) {}
-  });
-}
+document.getElementById('gate-password').addEventListener('keydown', e => { if(e.key==='Enter') checkGate(); });
 
-// ══ STORAGE ═══════════════════════════════════════════════════
+// ══ LOGIN ═════════════════════════════════════════════════════
 async function doLogin() {
   const pw = document.getElementById('login-password').value;
   if (!pw) return;
   const btn = document.querySelector('#screen-login .btn-primary');
   if (btn) { btn.textContent = 'Entrando...'; btn.disabled = true; }
 
-  // Autentica no Firebase usando email derivado do hash da senha
-  // Isso não expõe a senha — o email é gerado a partir do hash
+  // Firebase auth com email derivado do hash da senha (não expõe a senha)
   if (fbAuth) {
-    async function doLogin() {
-  const pw = document.getElementById('login-password').value;
-
-  let email = "";
-
-  if (pw === "Andre123") {
-    email = "andrexjean@gmail.com";
-  } else {
-    document.getElementById("login-error").style.display = "block";
-    return;
+    const enc = new TextEncoder();
+    const hashBuf = await crypto.subtle.digest('SHA-256', enc.encode(pw));
+    const hashHex = Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,20);
+    const fbEmail = `user_${hashHex}@brude.app`;
+    await fbSignIn(fbEmail, pw + '_fb2026');
   }
-
-  try {
-    await firebase.auth().signInWithEmailAndPassword(email, pw);
-    showScreen('screen-app');
-  } catch (e) {
-    alert(e.message);
-  }
-}
 
   const ok = await loadData(pw);
   if (btn) { btn.textContent = 'Entrar'; btn.disabled = false; }
@@ -1258,7 +1209,7 @@ document.getElementById('login-password').addEventListener('keydown', e => { if(
 function doLogout() {
   APP.password = '';
   if (fbAuth) fbAuth.signOut();
-  if (fbListener) { fbListener(); fbListener = null; }
+  if (fbListener && fbDb) { fbDb.ref(fbPath()).off('value', fbListener); fbListener = null; }
   showScreen('screen-login');
   document.getElementById('login-password').value = '';
 }
@@ -1286,6 +1237,12 @@ function switchTab(name, el) {
 }
 
 // ══ MODALS ════════════════════════════════════════════════════
+function showModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'modal-add-gasto' || id === 'modal-add-entrada') initDatas();
+  if (id === 'modal-add-custo-fixo') renderCustosFixosModal();
+}
+
 function hideModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
 
@@ -1293,8 +1250,9 @@ document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('cli
 function setSyncStatus(status) {
   const dot = document.getElementById('sync-dot');
   const txt = document.getElementById('sync-status');
+  if (!dot || !txt) return;
   dot.className = 'sync-dot';
-  if (status === 'ok') { dot.classList.add(''); txt.textContent = 'Salvo localmente · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+  if (status === 'ok') { txt.textContent = 'Salvo · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
   if (status === 'syncing') { dot.classList.add('syncing'); txt.textContent = 'Salvando...'; }
   if (status === 'error') { dot.classList.add('error'); txt.textContent = 'Erro ao salvar'; }
 }
@@ -1311,147 +1269,15 @@ function renderMonthSelector() {
       const btn = document.createElement('div');
       btn.className = 'month-btn' + (APP.months[key]?' has-data':'') + (key===APP.currentMonth?' active':'');
       btn.textContent = key;
-      btn.onclick = () => { APP.currentMonth = key; document.getElementById('topbar-month-btn').textContent = key+' ▾'; renderMonthSelector(); hideModal('modal-months'); };
+      btn.onclick = () => {
+        APP.currentMonth = key;
+        document.getElementById('topbar-month-btn').textContent = key+' ▾';
+        renderMonthSelector();
+        hideModal('modal-months');
+      };
       grid.appendChild(btn);
     });
   });
-}
-
-// ══ FILE UPLOAD ═══════════════════════════════════════════════
-let uploadedFiles = [];
-
-function handleDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag'); }
-function handleDragLeave(e) { document.getElementById('drop-zone').classList.remove('drag'); }
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('drop-zone').classList.remove('drag');
-  handleFiles(Array.from(e.dataTransfer.files));
-}
-function handleFileSelect(e) { handleFiles(Array.from(e.target.files)); }
-
-function getFileType(name) {
-  if (name.endsWith('.pdf')) return 'pdf';
-  if (name.endsWith('.html') || name.endsWith('.htm')) return 'html';
-  if (name.endsWith('.xlsx') || name.endsWith('.xls')) return 'xls';
-  if (name.endsWith('.csv')) return 'csv';
-  return 'other';
-}
-
-function handleFiles(files) {
-  files.forEach(f => {
-    if (uploadedFiles.find(u => u.name === f.name)) return;
-    uploadedFiles.push({file: f, name: f.name, type: getFileType(f.name), status: 'ready'});
-  });
-  renderFileList();
-  document.getElementById('upload-btn-row').style.display = uploadedFiles.length ? 'block' : 'none';
-}
-
-function renderFileList() {
-  const list = document.getElementById('uploaded-files-list');
-  list.innerHTML = '';
-  uploadedFiles.forEach((f, i) => {
-    const item = document.createElement('div');
-    item.className = 'file-item';
-    const iconClass = f.type === 'pdf' ? 'pdf' : f.type === 'xls' ? 'xls' : 'html';
-    const iconChar = f.type === 'pdf' ? 'PDF' : f.type === 'xls' ? 'XLS' : 'HTM';
-    const statusClass = f.status === 'ready' ? '' : f.status === 'ok' ? 'ok' : f.status === 'processing' ? 'processing' : 'error';
-    const statusText = f.status === 'ready' ? 'pronto' : f.status === 'ok' ? 'importado' : f.status === 'processing' ? 'processando...' : 'erro';
-    item.innerHTML = `
-      <div class="file-icon ${iconClass}" style="font-size:9px;font-weight:700">${iconChar}</div>
-      <div class="file-name">${f.name}</div>
-      <span class="file-status ${statusClass}">${statusText}</span>
-      <span class="file-remove" onclick="removeFile(${i})">×</span>
-    `;
-    list.appendChild(item);
-  });
-}
-
-function removeFile(i) {
-  uploadedFiles.splice(i, 1);
-  renderFileList();
-  document.getElementById('upload-btn-row').style.display = uploadedFiles.length ? 'block' : 'none';
-}
-
-async function processFiles() {
-  const btn = document.getElementById('process-btn');
-  btn.textContent = 'Processando...';
-  btn.disabled = true;
-
-  for (let i = 0; i < uploadedFiles.length; i++) {
-    uploadedFiles[i].status = 'processing';
-    renderFileList();
-    await new Promise(r => setTimeout(r, 800));
-
-    // Simulate parsing — in production this reads real content
-    const f = uploadedFiles[i];
-    if (f.type === 'html') {
-      // Parse Familia Oliveira HTML format
-      try {
-        const text = await f.file.text();
-        const parsed = parseOliveiraHTML(text);
-        if (parsed) mergeMonthData(parsed);
-        f.status = 'ok';
-      } catch { f.status = 'error'; }
-    } else {
-      // For PDF/XLS — mark as ready for manual review
-      f.status = 'ok';
-    }
-    renderFileList();
-  }
-
-  await saveData();
-  btn.textContent = 'Processado! Atualize o dashboard.';
-  btn.disabled = false;
-  setSyncStatus('ok');
-}
-
-function parseOliveiraHTML(html) {
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const scripts = doc.querySelectorAll('script');
-    let catsData = null;
-    scripts.forEach(s => {
-      if (s.textContent.includes('const CATS')) {
-        const match = s.textContent.match(/const CATS = \[([\s\S]*?)\];/);
-        if (match) {
-          // Safe parse of CATS array
-          try {
-            const cats = eval('[' + match[1] + ']');
-            const categorias = {};
-            let totalCartao = 0;
-            cats.forEach(c => {
-              const total = (c[2]||0) + (c[3]||0) + (c[4]||0);
-              if (total > 0) { categorias[c[0]] = total; totalCartao += total; }
-            });
-            catsData = {categorias, gastos_cartao: totalCartao};
-          } catch {}
-        }
-      }
-    });
-    return catsData;
-  } catch { return null; }
-}
-
-function mergeMonthData(parsed) {
-  const m = APP.currentMonth;
-  if (!APP.months[m]) APP.months[m] = {};
-  Object.assign(APP.months[m], parsed);
-}
-
-// ══ SAVE MONTH ════════════════════════════════════════════════
-async function saveMonthData() {
-  const m = APP.currentMonth;
-  if (!APP.months[m]) APP.months[m] = {};
-  // Read confirm-fixed-list inputs
-  const inputs = document.querySelectorAll('#confirm-fixed-list input');
-  const vals = Array.from(inputs).map(i => parseFloat(i.value.replace(/[^\d.]/g,'')) || 0);
-  APP.months[m].parcela_imovel = vals[0];
-  APP.months[m].parcela_carro = vals[1];
-  APP.months[m].gastos_fixos = vals.reduce((a,b)=>a+b,0);
-  APP.months[m].comissao = vals[5] || 5000;
-  await saveData();
-  alert('Dados do mês salvos com sucesso!');
 }
 
 // ══ PASSWORD ══════════════════════════════════════════════════
@@ -1473,7 +1299,7 @@ async function exportBackup() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `familia-oliveira-backup-${new Date().toISOString().slice(0,10)}.fo-backup`;
+  a.download = `brude-backup-${new Date().toISOString().slice(0,10)}.fo-backup`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -1491,13 +1317,112 @@ async function restoreBackup(e) {
   renderCharts();
 }
 
-// ══ CUSTO FIXO MODAL ══════════════════════════════════════════
-function showModal(id) {
-  document.getElementById(id).classList.add('open');
-  if (id === 'modal-add-gasto' || id === 'modal-add-entrada') initDatas();
-  if (id === 'modal-add-custo-fixo') renderCustosFixosModal();
+// ══ SAVE MONTH ════════════════════════════════════════════════
+async function saveMonthData() {
+  const m = APP.currentMonth;
+  if (!APP.months[m]) APP.months[m] = {};
+  const inputs = document.querySelectorAll('#confirm-fixed-list input');
+  const vals = Array.from(inputs).map(i => parseFloat(i.value.replace(/[^\d.]/g,'')) || 0);
+  APP.months[m].parcela_imovel = vals[0];
+  APP.months[m].parcela_carro = vals[1];
+  APP.months[m].gastos_fixos = vals.reduce((a,b)=>a+b,0);
+  APP.months[m].comissao = vals[5] || 5000;
+  await saveData();
+  alert('Dados do mês salvos!');
 }
 
+// ══ FILE UPLOAD ═══════════════════════════════════════════════
+let uploadedFiles = [];
+
+function handleDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag'); }
+function handleDragLeave(e) { document.getElementById('drop-zone').classList.remove('drag'); }
+function handleDrop(e) { e.preventDefault(); document.getElementById('drop-zone').classList.remove('drag'); handleFiles(Array.from(e.dataTransfer.files)); }
+function handleFileSelect(e) { handleFiles(Array.from(e.target.files)); }
+
+function getFileType(name) {
+  if (name.endsWith('.pdf')) return 'pdf';
+  if (name.endsWith('.html') || name.endsWith('.htm')) return 'html';
+  if (name.endsWith('.xlsx') || name.endsWith('.xls')) return 'xls';
+  return 'other';
+}
+
+function handleFiles(files) {
+  files.forEach(f => {
+    if (uploadedFiles.find(u => u.name === f.name)) return;
+    uploadedFiles.push({file:f, name:f.name, type:getFileType(f.name), status:'ready'});
+  });
+  renderFileList();
+  document.getElementById('upload-btn-row').style.display = uploadedFiles.length ? 'block' : 'none';
+}
+
+function renderFileList() {
+  const list = document.getElementById('uploaded-files-list');
+  list.innerHTML = '';
+  uploadedFiles.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    const iconClass = f.type === 'pdf' ? 'pdf' : f.type === 'xls' ? 'xls' : 'html';
+    const iconChar = f.type === 'pdf' ? 'PDF' : f.type === 'xls' ? 'XLS' : 'HTM';
+    const statusClass = f.status === 'ok' ? 'ok' : f.status === 'processing' ? 'processing' : f.status === 'error' ? 'error' : '';
+    const statusText = f.status === 'ready' ? 'pronto' : f.status === 'ok' ? 'importado' : f.status === 'processing' ? 'processando...' : 'erro';
+    item.innerHTML = `<div class="file-icon ${iconClass}" style="font-size:9px;font-weight:700">${iconChar}</div><div class="file-name">${f.name}</div><span class="file-status ${statusClass}">${statusText}</span><span class="file-remove" onclick="removeFile(${i})">×</span>`;
+    list.appendChild(item);
+  });
+}
+
+function removeFile(i) {
+  uploadedFiles.splice(i, 1);
+  renderFileList();
+  document.getElementById('upload-btn-row').style.display = uploadedFiles.length ? 'block' : 'none';
+}
+
+async function processFiles() {
+  const btn = document.getElementById('process-btn');
+  btn.textContent = 'Processando...'; btn.disabled = true;
+  for (let i = 0; i < uploadedFiles.length; i++) {
+    uploadedFiles[i].status = 'processing'; renderFileList();
+    await new Promise(r => setTimeout(r, 600));
+    const f = uploadedFiles[i];
+    if (f.type === 'html') {
+      try { const text = await f.file.text(); const parsed = parseOliveiraHTML(text); if (parsed) mergeMonthData(parsed); f.status = 'ok'; } catch { f.status = 'error'; }
+    } else { f.status = 'ok'; }
+    renderFileList();
+  }
+  await saveData();
+  btn.textContent = 'Processado!'; btn.disabled = false;
+}
+
+function parseOliveiraHTML(html) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const scripts = doc.querySelectorAll('script');
+    let catsData = null;
+    scripts.forEach(s => {
+      if (s.textContent.includes('const CATS')) {
+        const match = s.textContent.match(/const CATS = \[([\s\S]*?)\];/);
+        if (match) {
+          try {
+            const cats = eval('[' + match[1] + ']');
+            const categorias = {};
+            let totalCartao = 0;
+            cats.forEach(c => { const total = (c[2]||0)+(c[3]||0)+(c[4]||0); if (total > 0) { categorias[c[0]] = total; totalCartao += total; } });
+            catsData = {categorias, gastos_cartao: totalCartao};
+          } catch {}
+        }
+      }
+    });
+    return catsData;
+  } catch { return null; }
+}
+
+function mergeMonthData(parsed) {
+  const m = APP.currentMonth;
+  if (!APP.months[m]) APP.months[m] = {};
+  Object.assign(APP.months[m], parsed);
+}
+
+// ══ CUSTO FIXO ════════════════════════════════════════════════
 function renderCustosFixosModal() {
   const el = document.getElementById('custos-fixos-modal-list');
   if (!el) return;
@@ -1508,7 +1433,7 @@ function renderCustosFixosModal() {
       <input type="number" value="${f.val}" step="0.01"
         onchange="APP.fixedCosts[${i}].val=parseFloat(this.value)||0;saveData();renderFluxoFixos()"
         style="width:90px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;text-align:right;font-family:'DM Sans',sans-serif;outline:none">
-      <span onclick="removerCustoFixo(${i})" style="color:var(--muted2);cursor:pointer;font-size:16px" title="Remover">×</span>
+      <span onclick="removerCustoFixo(${i})" style="color:var(--muted2);cursor:pointer;font-size:16px">×</span>
     </div>
   `).join('');
 }
@@ -1518,7 +1443,7 @@ async function adicionarCustoFixo() {
   const val = parseFloat(document.getElementById('novo-fixo-val').value);
   const cor = document.getElementById('novo-fixo-cor').value;
   if (!nome || !val || val <= 0) { alert('Preencha nome e valor.'); return; }
-  APP.fixedCosts.push({name: nome, val, color: cor});
+  APP.fixedCosts.push({name:nome, val, color:cor});
   document.getElementById('novo-fixo-nome').value = '';
   document.getElementById('novo-fixo-val').value = '';
   await saveData();
@@ -1537,11 +1462,181 @@ async function removerCustoFixo(i) {
 function renderFluxoFixos() {
   const el = document.getElementById('fixed-costs-list');
   if (!el) return;
-  let total = 0;
-  el.innerHTML = APP.fixedCosts.map(f => {
-    total += f.val;
-    return `<div class="fixed-item"><div class="fixed-dot" style="background:${f.color}"></div><div class="fixed-name">${f.name}</div><div class="fixed-val">${fmt(f.val)}</div></div>`;
-  }).join('');
+  el.innerHTML = APP.fixedCosts.map(f =>
+    `<div class="fixed-item"><div class="fixed-dot" style="background:${f.color}"></div><div class="fixed-name">${f.name}</div><div class="fixed-val">${fmt(f.val)}</div></div>`
+  ).join('');
+}
+
+// ══ LANÇAMENTOS MANUAIS ═══════════════════════════════════════
+function initDatas() {
+  const hoje = new Date().toISOString().split('T')[0];
+  const gi = document.getElementById('gasto-data');
+  const ei = document.getElementById('entrada-data');
+  if (gi && !gi.value) gi.value = hoje;
+  if (ei && !ei.value) ei.value = hoje;
+}
+
+async function salvarGasto() {
+  const desc = document.getElementById('gasto-desc').value.trim();
+  const val = parseFloat(document.getElementById('gasto-val').value);
+  const cat = document.getElementById('gasto-cat').value;
+  const titular = document.getElementById('gasto-titular').value;
+  const data = document.getElementById('gasto-data').value;
+  if (!desc || !val || val <= 0) { alert('Preencha descrição e valor.'); return; }
+  const m = APP.currentMonth;
+  if (!APP.months[m]) APP.months[m] = {};
+  if (!APP.months[m].lancamentos) APP.months[m].lancamentos = [];
+  APP.months[m].lancamentos.push({tipo:'gasto', desc, val, cat, titular, data, id: Date.now()});
+  if (!APP.months[m].categorias) APP.months[m].categorias = {};
+  APP.months[m].categorias[cat] = (APP.months[m].categorias[cat] || 0) + val;
+  APP.months[m].gastos_cartao = (APP.months[m].gastos_cartao || 0) + val;
+  await saveData();
+  hideModal('modal-add-gasto');
+  document.getElementById('gasto-desc').value = '';
+  document.getElementById('gasto-val').value = '';
+  renderLancamentos();
+}
+
+async function salvarEntrada() {
+  const desc = document.getElementById('entrada-desc').value.trim();
+  const val = parseFloat(document.getElementById('entrada-val').value);
+  const tipo = document.getElementById('entrada-tipo').value;
+  const titular = document.getElementById('entrada-titular').value;
+  const data = document.getElementById('entrada-data').value;
+  if (!desc || !val || val <= 0) { alert('Preencha descrição e valor.'); return; }
+  const m = APP.currentMonth;
+  if (!APP.months[m]) APP.months[m] = {};
+  if (!APP.months[m].lancamentos) APP.months[m].lancamentos = [];
+  APP.months[m].lancamentos.push({tipo:'entrada', desc, val, cat:tipo, titular, data, id: Date.now()});
+  if (tipo === 'Salário') APP.months[m].renda_fixa = (APP.months[m].renda_fixa || 0) + val;
+  if (tipo === 'Comissão') APP.months[m].comissao = val;
+  await saveData();
+  hideModal('modal-add-entrada');
+  document.getElementById('entrada-desc').value = '';
+  document.getElementById('entrada-val').value = '';
+  renderLancamentos();
+}
+
+async function removerLancamento(id) {
+  const m = APP.currentMonth;
+  if (!APP.months[m] || !APP.months[m].lancamentos) return;
+  const item = APP.months[m].lancamentos.find(l => l.id === id);
+  if (!item) return;
+  if (item.tipo === 'gasto') {
+    APP.months[m].gastos_cartao = Math.max(0, (APP.months[m].gastos_cartao || 0) - item.val);
+    if (APP.months[m].categorias && APP.months[m].categorias[item.cat]) {
+      APP.months[m].categorias[item.cat] = Math.max(0, APP.months[m].categorias[item.cat] - item.val);
+    }
+  }
+  APP.months[m].lancamentos = APP.months[m].lancamentos.filter(l => l.id !== id);
+  await saveData();
+  renderLancamentos();
+}
+
+function renderLancamentos() {
+  const el = document.getElementById('lancamentos-lista');
+  if (!el) return;
+  const m = APP.currentMonth;
+  const items = (APP.months[m] && APP.months[m].lancamentos) || [];
+  if (!items.length) { el.innerHTML = ''; return; }
+  const sorted = [...items].sort((a,b) => new Date(b.data) - new Date(a.data));
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      Lançamentos manuais (${items.length})<span style="flex:1;height:1px;background:var(--border);display:block"></span>
+    </div>
+    ${sorted.map(l => `
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:6px;font-size:12px">
+        <div style="width:6px;height:6px;border-radius:50%;background:${l.tipo==='gasto'?'#ef4444':'#22c55e'};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.desc}</div>
+          <div style="color:var(--muted);font-size:11px">${l.cat} · ${l.titular} · ${l.data}</div>
+        </div>
+        <div style="font-weight:600;color:${l.tipo==='gasto'?'#ef4444':'#22c55e'};flex-shrink:0">${l.tipo==='gasto'?'−':'+'} ${fmt(l.val)}</div>
+        <span onclick="removerLancamento(${l.id})" style="color:var(--muted2);cursor:pointer;font-size:16px;flex-shrink:0">×</span>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ══ GOOGLE DRIVE ══════════════════════════════════════════════
+let GDRIVE_CLIENT_ID = '401474452801-84ijevj738v4bp92gqo0v97g7kiojk7e.apps.googleusercontent.com';
+let GDRIVE_TOKEN = null;
+let GDRIVE_FILE_ID = localStorage.getItem('fo_gdrive_file_id') || null;
+const GDRIVE_FILENAME = 'familia-oliveira-backup.fo-backup';
+const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+function updateGdriveStatus() {
+  const el = document.getElementById('gdrive-status');
+  const btn = document.getElementById('gdrive-btn');
+  if (!el) return;
+  if (GDRIVE_TOKEN) {
+    el.textContent = 'Conectado · backup automático ativo';
+    el.style.color = 'var(--green)';
+    if (btn) btn.textContent = 'Reconectar';
+  } else {
+    el.textContent = 'Clique para conectar com sua conta Google';
+    el.style.color = 'var(--accent)';
+    if (btn) btn.textContent = 'Conectar Google Drive';
+  }
+}
+
+function gdriveConnect() { gdriveAuth(); }
+
+function gdriveAuth() {
+  const params = new URLSearchParams({
+    client_id: GDRIVE_CLIENT_ID,
+    redirect_uri: window.location.origin + window.location.pathname,
+    response_type: 'token',
+    scope: GDRIVE_SCOPES,
+    prompt: 'select_account'
+  });
+  window.open('https://accounts.google.com/o/oauth2/v2/auth?' + params, '_blank', 'width=500,height=600');
+  window.addEventListener('message', async (e) => {
+    if (e.data && e.data.type === 'gdrive_token') {
+      GDRIVE_TOKEN = e.data.token;
+      updateGdriveStatus();
+      gdriveAutoBackup();
+    }
+  }, {once: true});
+}
+
+(function handleOAuthRedirect() {
+  const hash = window.location.hash;
+  if (hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.substring(1));
+    const token = params.get('access_token');
+    if (token) {
+      GDRIVE_TOKEN = token;
+      window.history.replaceState({}, '', window.location.pathname);
+      if (window.opener) { window.opener.postMessage({type:'gdrive_token', token}, '*'); window.close(); }
+      else { updateGdriveStatus(); }
+    }
+  }
+})();
+
+async function gdriveAutoBackup() {
+  if (!GDRIVE_TOKEN || !APP.password) return;
+  try {
+    const enc = await CRYPTO.encrypt(APP, APP.password);
+    const blob = new Blob([enc], {type:'application/octet-stream'});
+    if (GDRIVE_FILE_ID) {
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${GDRIVE_FILE_ID}?uploadType=media`, {
+        method:'PATCH', headers:{'Authorization':'Bearer '+GDRIVE_TOKEN,'Content-Type':'application/octet-stream'}, body:blob
+      });
+    } else {
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({name:GDRIVE_FILENAME,mimeType:'application/octet-stream'})], {type:'application/json'}));
+      form.append('file', blob);
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method:'POST', headers:{'Authorization':'Bearer '+GDRIVE_TOKEN}, body:form
+      });
+      const data = await res.json();
+      GDRIVE_FILE_ID = data.id;
+      localStorage.setItem('fo_gdrive_file_id', GDRIVE_FILE_ID);
+    }
+    const el = document.getElementById('sync-status');
+    if (el) el.textContent = 'Salvo · Drive · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  } catch(e) { console.error('Drive backup error:', e); }
 }
 
 // ══ CHARTS ════════════════════════════════════════════════════
@@ -1549,17 +1644,13 @@ let charts = {};
 
 function renderCharts() {
   const months = Object.keys(APP.months);
-  const pl = months.map(m => {
-    const d = APP.months[m];
-    return (d.patrimonio_imovel||433000) + (d.investimentos_xp||0) + (d.investimentos_nubank||0) - (d.divida_imovel||0) - (d.divida_carro||0);
-  });
+  const pl = months.map(m => { const d = APP.months[m]; return (d.patrimonio_imovel||433000)+(d.investimentos_xp||0)+(d.investimentos_nubank||0)-(d.divida_imovel||0)-(d.divida_carro||0); });
   const gastos = months.map(m => APP.months[m].gastos_cartao||0);
   const renda = months.map(m => APP.months[m].renda_fixa||15000);
   const invXP = months.map(m => APP.months[m].investimentos_xp||0);
   const invNu = months.map(m => APP.months[m].investimentos_nubank||0);
-  const invTotal = months.map((m,i) => invXP[i] + invNu[i]);
+  const invTotal = months.map((m,i) => invXP[i]+invNu[i]);
 
-  // Rentabilidade histórica (dados reais XP)
   const rentMeses = ['Jan/24','Fev/24','Mar/24','Abr/24','Mai/24','Jun/24','Jul/24','Ago/24','Set/24','Out/24','Nov/24','Dez/24','Jan/25','Fev/25','Mar/25','Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26'];
   const rentPort = [0.40,0.80,0.91,0.78,0.86,0.83,1.02,0.96,0.89,0.97,0.79,0.94,1.13,0.96,1.37,1.41,1.93,0.83,1.06,1.06,1.58,1.02,1.10,1.37,1.42,1.27,0.06];
   const rentCDI  = [0.48,0.81,0.83,0.89,0.84,0.79,0.91,0.87,0.83,0.93,0.77,0.93,1.01,0.99,0.96,1.06,1.14,1.10,1.27,1.16,1.22,1.27,1.06,1.22,1.16,1.00,0.61];
@@ -1589,352 +1680,39 @@ function renderCharts() {
     }
   };
 
-  const ds = (data,color,label,fill=true) => ({
-    label, data, borderColor:color,
-    backgroundColor: fill ? color+'22' : 'transparent',
-    fill, tension:.4, pointRadius:3, pointBackgroundColor:color, borderWidth:2
-  });
+  const ds = (data,color,label,fill=true) => ({label,data,borderColor:color,backgroundColor:fill?color+'22':'transparent',fill,tension:.4,pointRadius:3,pointBackgroundColor:color,borderWidth:2});
 
-  // Patrimônio líquido
   makeChart('chart-pl', {type:'line', data:{labels:months, datasets:[ds(pl,'#22c55e','PL')]}, options:baseOpts});
-
-  // Gastos vs renda
   makeChart('chart-gastos', {
-    type:'bar',
-    data:{labels:months, datasets:[
-      {label:'Renda fixa',data:renda,backgroundColor:'#4f8ef744',borderColor:'#4f8ef7',borderWidth:1,borderRadius:4},
+    type:'bar', data:{labels:months, datasets:[
+      {label:'Renda',data:renda,backgroundColor:'#4f8ef744',borderColor:'#4f8ef7',borderWidth:1,borderRadius:4},
       {label:'Gastos',data:gastos,backgroundColor:'#ef444444',borderColor:'#ef4444',borderWidth:1,borderRadius:4}
-    ]},
-    options:{...baseOpts}
+    ]}, options:baseOpts
   });
-
-  // Investimentos — linha empilhada XP + Nubank + Total
   makeChart('chart-inv', {
-    type:'line',
-    data:{labels:months, datasets:[
+    type:'line', data:{labels:months, datasets:[
       ds(invTotal,'#a78bfa','Total',true),
       ds(invXP,'#22c55e','XP',false),
       ds(invNu,'#4f8ef7','Nubank',false)
-    ]},
-    options:{...baseOpts, scales:{...baseOpts.scales, y:{...baseOpts.scales.y, beginAtZero:true}}}
+    ]}, options:{...baseOpts, scales:{...baseOpts.scales, y:{...baseOpts.scales.y, beginAtZero:true}}}
   });
-
-  // Rentabilidade histórica
   makeChart('chart-rent', {
-    type:'line',
-    data:{labels:rentMeses, datasets:[
+    type:'line', data:{labels:rentMeses, datasets:[
       {label:'Portfólio',data:rentPort,borderColor:'#22c55e',backgroundColor:'#22c55e22',fill:true,tension:.3,pointRadius:2,pointBackgroundColor:'#22c55e',borderWidth:2},
       {label:'CDI',data:rentCDI,borderColor:'#7a82a0',backgroundColor:'transparent',fill:false,tension:.3,pointRadius:2,pointBackgroundColor:'#7a82a0',borderWidth:1.5,borderDash:[4,3]}
-    ]},
-    options:pctOpts
+    ]}, options:pctOpts
   });
 }
 
-// ══ GATE ══════════════════════════════════════════════════════
-const GATE_KEY = 'fo_gate';
-const DEFAULT_GATE = 'Familia2026';
-const GATE_SALT = new Uint8Array([66,82,85,68,69,95,71,65,84,69,95,50,48,50,54,33]);
+// ══ UTILS ═════════════════════════════════════════════════════
+function fmt(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
 
-async function hashGate(password) {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
-  );
-  const bits = await crypto.subtle.deriveBits(
-    {name:'PBKDF2', salt:GATE_SALT, iterations:100000, hash:'SHA-256'},
-    keyMaterial, 256
-  );
-  return Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-async function getGateHash() {
-  const stored = localStorage.getItem(GATE_KEY);
-  if (!stored || stored.length < 60) {
-    const h = await hashGate(DEFAULT_GATE);
-    localStorage.setItem(GATE_KEY, h);
-    return h;
-  }
-  return stored;
-}
-
-async function resetGate() {
-  localStorage.removeItem(GATE_KEY);
-  document.getElementById('gate-password').value = '';
-  document.getElementById('gate-error').style.display = 'none';
-  await getGateHash();
-  alert('Código resetado. Use: Familia2026');
-}
-
-async function checkGate() {
-  const pw = document.getElementById('gate-password').value.trim();
-  if (!pw) return;
-  const btn = document.querySelector('#screen-gate button');
-  if (btn) { btn.textContent = '...'; btn.disabled = true; }
-  try {
-    const stored = await getGateHash();
-    const entered = await hashGate(pw);
-    if (entered !== stored) {
-      document.getElementById('gate-error').style.display = 'block';
-      document.getElementById('gate-password').value = '';
-    } else {
-      document.getElementById('gate-error').style.display = 'none';
-      showScreen('screen-login');
-      document.getElementById('login-password').focus();
-    }
-  } finally {
-    if (btn) { btn.textContent = 'Continuar'; btn.disabled = false; }
-  }
-}
-
-async function saveGate() {
-  const v = document.getElementById('new-gate').value.trim();
-  if (!v || v.length < 4) { alert('Código muito curto. Use pelo menos 4 caracteres.'); return; }
-  const h = await hashGate(v);
-  localStorage.setItem(GATE_KEY, h);
-  document.getElementById('new-gate').value = '';
-  alert('Código de acesso atualizado!');
-}
-
-document.getElementById('gate-password').addEventListener('keydown', e => { if(e.key==='Enter') checkGate(); });
-
-// ══ GOOGLE DRIVE ══════════════════════════════════════════════
-let GDRIVE_CLIENT_ID = '401474452801-84ijevj738v4bp92gqo0v97g7kiojk7e.apps.googleusercontent.com';
-let GDRIVE_TOKEN = null;
-let GDRIVE_FILE_ID = localStorage.getItem('fo_gdrive_file_id') || null;
-const GDRIVE_FILENAME = 'familia-oliveira-backup.fo-backup';
-const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
-function updateGdriveStatus() {
-  const el = document.getElementById('gdrive-status');
-  const btn = document.getElementById('gdrive-btn');
-  if (!el) return;
-  if (GDRIVE_TOKEN) {
-    el.textContent = 'Conectado · backup automático ativo';
-    el.style.color = 'var(--green)';
-    btn.textContent = 'Reconectar';
-  } else {
-    el.textContent = 'Clique para conectar com sua conta Google';
-    el.style.color = 'var(--accent)';
-    btn.textContent = 'Conectar Google Drive';
-  }
-}
-
-function gdriveConnect() {
-  gdriveAuth();
-}
-
-function gdriveAuth() {
-  if (!GDRIVE_CLIENT_ID) return;
-  const params = new URLSearchParams({
-    client_id: GDRIVE_CLIENT_ID,
-    redirect_uri: window.location.origin + window.location.pathname,
-    response_type: 'token',
-    scope: GDRIVE_SCOPES,
-    prompt: 'select_account'
-  });
-  window.open('https://accounts.google.com/o/oauth2/v2/auth?' + params, '_blank', 'width=500,height=600');
-  // Listen for token via postMessage from popup (simplified flow)
-  window.addEventListener('message', async (e) => {
-    if (e.data && e.data.type === 'gdrive_token') {
-      GDRIVE_TOKEN = e.data.token;
-      updateGdriveStatus();
-      await gdriveAutoBackup();
-    }
-  }, {once: true});
-}
-
-// Handle OAuth redirect (token in hash)
-(function handleOAuthRedirect() {
-  const hash = window.location.hash;
-  if (hash.includes('access_token')) {
-    const params = new URLSearchParams(hash.substring(1));
-    const token = params.get('access_token');
-    if (token) {
-      GDRIVE_TOKEN = token;
-      window.history.replaceState({}, '', window.location.pathname);
-      // If opened as popup, send token to opener
-      if (window.opener) {
-        window.opener.postMessage({type:'gdrive_token', token}, '*');
-        window.close();
-      } else {
-        updateGdriveStatus();
-      }
-    }
-  }
-})();
-
-async function gdriveAutoBackup() {
-  if (!GDRIVE_TOKEN || !APP.password) return;
-  try {
-    setSyncStatus('syncing');
-    const enc = await CRYPTO.encrypt(APP, APP.password);
-    const blob = new Blob([enc], {type:'application/octet-stream'});
-
-    if (GDRIVE_FILE_ID) {
-      // Update existing file
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${GDRIVE_FILE_ID}?uploadType=media`, {
-        method: 'PATCH',
-        headers: {'Authorization': 'Bearer ' + GDRIVE_TOKEN, 'Content-Type': 'application/octet-stream'},
-        body: blob
-      });
-    } else {
-      // Create new file
-      const meta = {name: GDRIVE_FILENAME, mimeType: 'application/octet-stream'};
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(meta)], {type:'application/json'}));
-      form.append('file', blob);
-      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: {'Authorization': 'Bearer ' + GDRIVE_TOKEN},
-        body: form
-      });
-      const data = await res.json();
-      GDRIVE_FILE_ID = data.id;
-      localStorage.setItem('fo_gdrive_file_id', GDRIVE_FILE_ID);
-    }
-    setSyncStatus('ok');
-    const el = document.getElementById('sync-status');
-    if (el) el.textContent = 'Salvo · Google Drive · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  } catch(e) {
-    setSyncStatus('error');
-    console.error('Google Drive backup error:', e);
-  }
-}
-
-// ══ LANÇAMENTOS MANUAIS ═══════════════════════════════════════
-function initDatas() {
-  const hoje = new Date().toISOString().split('T')[0];
-  const gi = document.getElementById('gasto-data');
-  const ei = document.getElementById('entrada-data');
-  if (gi && !gi.value) gi.value = hoje;
-  if (ei && !ei.value) ei.value = hoje;
-}
-
-function showModal(id) {
-  document.getElementById(id).classList.add('open');
-  if (id === 'modal-add-gasto' || id === 'modal-add-entrada') initDatas();
-}
-
-async function salvarGasto() {
-  const desc = document.getElementById('gasto-desc').value.trim();
-  const val = parseFloat(document.getElementById('gasto-val').value);
-  const cat = document.getElementById('gasto-cat').value;
-  const titular = document.getElementById('gasto-titular').value;
-  const data = document.getElementById('gasto-data').value;
-
-  if (!desc || !val || val <= 0) { alert('Preencha descrição e valor.'); return; }
-
-  const m = APP.currentMonth;
-  if (!APP.months[m]) APP.months[m] = {};
-  if (!APP.months[m].lancamentos) APP.months[m].lancamentos = [];
-
-  APP.months[m].lancamentos.push({tipo:'gasto', desc, val, cat, titular, data, id: Date.now()});
-
-  // Update category total
-  if (!APP.months[m].categorias) APP.months[m].categorias = {};
-  APP.months[m].categorias[cat] = (APP.months[m].categorias[cat] || 0) + val;
-  APP.months[m].gastos_cartao = (APP.months[m].gastos_cartao || 0) + val;
-
-  await saveData();
-  hideModal('modal-add-gasto');
-  document.getElementById('gasto-desc').value = '';
-  document.getElementById('gasto-val').value = '';
-  renderLancamentos();
-}
-
-async function salvarEntrada() {
-  const desc = document.getElementById('entrada-desc').value.trim();
-  const val = parseFloat(document.getElementById('entrada-val').value);
-  const tipo = document.getElementById('entrada-tipo').value;
-  const titular = document.getElementById('entrada-titular').value;
-  const data = document.getElementById('entrada-data').value;
-
-  if (!desc || !val || val <= 0) { alert('Preencha descrição e valor.'); return; }
-
-  const m = APP.currentMonth;
-  if (!APP.months[m]) APP.months[m] = {};
-  if (!APP.months[m].lancamentos) APP.months[m].lancamentos = [];
-
-  APP.months[m].lancamentos.push({tipo:'entrada', desc, val, cat: tipo, titular, data, id: Date.now()});
-
-  // Update income if salary/commission
-  if (tipo === 'Salário') APP.months[m].renda_fixa = (APP.months[m].renda_fixa || 0) + val;
-  if (tipo === 'Comissão') APP.months[m].comissao = val;
-
-  await saveData();
-  hideModal('modal-add-entrada');
-  document.getElementById('entrada-desc').value = '';
-  document.getElementById('entrada-val').value = '';
-  renderLancamentos();
-}
-
-async function removerLancamento(id) {
-  const m = APP.currentMonth;
-  if (!APP.months[m] || !APP.months[m].lancamentos) return;
-  const item = APP.months[m].lancamentos.find(l => l.id === id);
-  if (!item) return;
-
-  // Reverse the impact
-  if (item.tipo === 'gasto') {
-    APP.months[m].gastos_cartao = Math.max(0, (APP.months[m].gastos_cartao || 0) - item.val);
-    if (APP.months[m].categorias && APP.months[m].categorias[item.cat]) {
-      APP.months[m].categorias[item.cat] = Math.max(0, APP.months[m].categorias[item.cat] - item.val);
-    }
-  }
-  APP.months[m].lancamentos = APP.months[m].lancamentos.filter(l => l.id !== id);
-  await saveData();
-  renderLancamentos();
-}
-
-function renderLancamentos() {
-  const el = document.getElementById('lancamentos-lista');
-  if (!el) return;
-  const m = APP.currentMonth;
-  const items = (APP.months[m] && APP.months[m].lancamentos) || [];
-  if (!items.length) { el.innerHTML = ''; return; }
-
-  const sorted = [...items].sort((a,b) => new Date(b.data) - new Date(a.data));
-  el.innerHTML = `
-    <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px">
-      Lançamentos manuais (${items.length})
-      <span style="flex:1;height:1px;background:var(--border);display:block"></span>
-    </div>
-    ${sorted.map(l => `
-      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:6px;font-size:12px">
-        <div style="width:6px;height:6px;border-radius:50%;background:${l.tipo==='gasto'?'#ef4444':'#22c55e'};flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.desc}</div>
-          <div style="color:var(--muted);font-size:11px">${l.cat} · ${l.titular} · ${l.data}</div>
-        </div>
-        <div style="font-weight:600;color:${l.tipo==='gasto'?'#ef4444':'#22c55e'};flex-shrink:0">${l.tipo==='gasto'?'−':'+'} ${fmt(l.val)}</div>
-        <span onclick="removerLancamento(${l.id})" style="color:var(--muted2);cursor:pointer;font-size:16px;flex-shrink:0" title="Remover">×</span>
-      </div>
-    `).join('')}
-  `;
-}
-
-// ══ UTILS ══════════════════════════════════════════════════════
-function fmt(v) {
-  return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
-}
-
-// ══ INIT ═══════════════════════════════════════════════════════
+// ══ INIT ══════════════════════════════════════════════════════
 initFirebase();
 updateGdriveStatus();
 
-// ══ SERVICE WORKER (PWA) ═══════════════════════════════════════
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
-
-function checkGate() {
-  const code = document.getElementById("gate-code").value;
-
-  if (code === "Familia2026") {
-    showScreen('screen-login');
-  } else {
-    alert("Código incorreto");
-  }
 }
 </script>
 </body>
