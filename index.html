@@ -37,6 +37,8 @@ h1,h2,h3{font-family:'DM Serif Display',serif}
 .auth-hint{font-size:11px;color:var(--muted2);margin-top:1rem}
 .auth-link{background:none;border:none;font-size:11px;color:var(--muted2);cursor:pointer;text-decoration:underline;margin-top:8px}
 #screen-app{flex-direction:column}
+#screen-app .content{visibility:hidden}
+#screen-app.authenticated .content{visibility:visible}
 .sync-bar{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);padding:6px 20px;background:var(--surface2);border-bottom:1px solid var(--border)}
 .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
 .sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite}
@@ -131,16 +133,15 @@ h1,h2,h3{font-family:'DM Serif Display',serif}
 <div id="screen-gate" class="screen active">
   <div class="auth-box">
     <div class="brude-logo"><span>BR</span><span class="u">U</span><span>DE</span></div>
-    <div class="brude-sub"><span>finanças</span></div>
+    <div style="height:2px;width:48px;background:var(--accent);border-radius:2px;margin:8px auto 2.5rem"></div>
     <div style="margin-bottom:12px">
       <label class="form-label">Código de acesso</label>
       <input type="password" id="gate-input" class="form-input" placeholder="••••••••" autocomplete="off">
     </div>
     <div id="gate-error" class="error-box">Código incorreto.</div>
     <button class="btn-primary" id="gate-btn" onclick="checkGate()">Continuar</button>
-    <div class="auth-hint">Família Oliveira · Sistema privado</div>
-    <br>
-    <button class="auth-link" onclick="resetGate()">Primeiro acesso neste dispositivo? Clique aqui</button>
+    <br><br>
+    <button class="auth-link" onclick="resetGate()">Primeiro acesso neste dispositivo?</button>
   </div>
 </div>
 
@@ -148,7 +149,7 @@ h1,h2,h3{font-family:'DM Serif Display',serif}
 <div id="screen-login" class="screen">
   <div class="auth-box">
     <div class="brude-logo"><span>BR</span><span class="u">U</span><span>DE</span></div>
-    <div class="brude-sub"><span>finanças</span></div>
+    <div style="height:2px;width:48px;background:var(--accent);border-radius:2px;margin:8px auto 2.5rem"></div>
     <div style="margin-bottom:12px">
       <label class="form-label">Senha de acesso</label>
       <input type="password" id="login-input" class="form-input" placeholder="••••••••" autocomplete="current-password">
@@ -185,25 +186,23 @@ h1,h2,h3{font-family:'DM Serif Display',serif}
     <!-- DASHBOARD -->
     <div id="tab-dashboard" class="tab-content">
       <div class="kpi-grid">
-        <div class="kpi green"><div class="kpi-label">Patrimônio líquido</div><div class="kpi-val" id="kpi-pl">R$ 202.900</div><div class="kpi-sub">Imóvel + invest. − dívidas</div></div>
-        <div class="kpi blue"><div class="kpi-label">Investido total</div><div class="kpi-val" id="kpi-inv">R$ 70.330</div><div class="kpi-sub">XP + Nubank</div></div>
-        <div class="kpi red"><div class="kpi-label">Gasto no cartão</div><div class="kpi-val" id="kpi-gasto">R$ 10.744</div><div class="kpi-sub" id="kpi-gasto-sub">71,6% da renda fixa</div></div>
-        <div class="kpi amber"><div class="kpi-label">Saldo do mês</div><div class="kpi-val" id="kpi-saldo">−R$ 3.149</div><div class="kpi-sub">Coberto pela comissão</div></div>
+        <div class="kpi green"><div class="kpi-label">Patrimônio líquido</div><div class="kpi-val" id="kpi-pl">—</div><div class="kpi-sub">Imóvel + invest. − dívidas</div></div>
+        <div class="kpi blue"><div class="kpi-label">Investido total</div><div class="kpi-val" id="kpi-inv">—</div><div class="kpi-sub">XP + Nubank</div></div>
+        <div class="kpi red"><div class="kpi-label">Gasto no cartão</div><div class="kpi-val" id="kpi-gasto">—</div><div class="kpi-sub" id="kpi-gasto-sub">—</div></div>
+        <div class="kpi amber"><div class="kpi-label">Saldo do mês</div><div class="kpi-val" id="kpi-saldo">—</div><div class="kpi-sub" id="kpi-saldo-sub">—</div></div>
       </div>
       <div class="card">
         <div class="card-title">Patrimônio — composição</div>
-        <div class="nw-bar"><div style="width:86%;background:#4f8ef7;height:100%"></div><div style="width:14%;background:#22c55e;height:100%"></div></div>
-        <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
-          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#4f8ef7;border-radius:2px;display:inline-block"></span>Imóvel R$ 433k</span>
-          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#22c55e;border-radius:2px;display:inline-block"></span>Invest. R$ 70k</span>
-          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#ef4444;border-radius:2px;display:inline-block"></span>Dívidas −R$ 300k</span>
-        </div>
+        <div class="nw-bar" id="nw-bar"></div>
+        <div id="nw-legend" style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap"></div>
       </div>
       <div class="sec-title">Alertas</div>
-      <div class="alert red"><div class="alert-title">Compras online + alimentação: R$ 3.107 acima da meta</div>Cortar pela metade libera ~R$ 1.550/mês para investir.</div>
-      <div class="alert amber"><div class="alert-title">CDB XP vence em jun/2026 — R$ 3.350 para realocar</div>Defina já o destino: ampliar FII ou novo CDB de prazo mais longo.</div>
-      <div class="alert green"><div class="alert-title">Reserva de emergência: 128% da meta (R$ 70.330 / R$ 55.000)</div>Meta completa. Aportes mensais podem ir 100% para crescimento.</div>
-      <div class="alert blue"><div class="alert-title">Dez/2026: parcelas do cartão zeram — +R$ 2.856/mês</div>Em 9 meses, esse valor se libera automaticamente.</div>
+      <div id="alerts-container">
+        <div class="alert red"><div class="alert-title">Compras online + alimentação: R$ 3.107 acima da meta</div>Cortar pela metade libera ~R$ 1.550/mês para investir.</div>
+        <div class="alert amber"><div class="alert-title">CDB XP vence em jun/2026 — R$ 3.350 para realocar</div>Defina já o destino: ampliar FII ou novo CDB de prazo mais longo.</div>
+        <div class="alert green"><div class="alert-title">Reserva de emergência: 128% da meta</div>Meta completa. Aportes mensais podem ir 100% para crescimento.</div>
+        <div class="alert blue"><div class="alert-title">Dez/2026: parcelas do cartão zeram — +R$ 2.856/mês</div>Em 9 meses, esse valor se libera automaticamente.</div>
+      </div>
       <div class="sec-title">Marcos financeiros</div>
       <div class="timeline">
         <div class="tl-item"><div class="tl-yr">Dez/2026</div><div class="tl-ev" style="color:var(--green)">+R$ 2.856/mês</div><div class="tl-det">Parcelas cartão zeradas</div></div>
@@ -216,14 +215,14 @@ h1,h2,h3{font-family:'DM Serif Display',serif}
     <!-- SITUAÇÃO -->
     <div id="tab-situacao" class="tab-content" style="display:none">
       <div style="background:var(--surface2);border-radius:var(--r);padding:18px;margin-bottom:14px;border-left:3px solid var(--accent)">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px">Situação atual — Abril/2026</div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px" id="sit-titulo">Situação atual</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-          <div><div style="font-size:11px;color:var(--muted)">Patrimônio líquido</div><div style="font-size:20px;font-weight:500;color:var(--green)">R$ 202.900</div></div>
-          <div><div style="font-size:11px;color:var(--muted)">Investido</div><div style="font-size:20px;font-weight:500;color:var(--accent)">R$ 70.330</div></div>
-          <div><div style="font-size:11px;color:var(--muted)">Gasto real / mês</div><div style="font-size:20px;font-weight:500;color:var(--red)">R$ 17.308</div></div>
-          <div><div style="font-size:11px;color:var(--muted)">Renda fixa mensal</div><div style="font-size:20px;font-weight:500;color:var(--text)">R$ 15.000</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">Patrimônio líquido</div><div style="font-size:20px;font-weight:500;color:var(--green)" id="sit-pl">—</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">Investido</div><div style="font-size:20px;font-weight:500;color:var(--accent)" id="sit-inv">—</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">Gasto real / mês</div><div style="font-size:20px;font-weight:500;color:var(--red)" id="sit-gasto">—</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">Renda fixa mensal</div><div style="font-size:20px;font-weight:500;color:var(--text)" id="sit-renda">—</div></div>
         </div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.7;padding-top:10px;border-top:1px solid var(--border)">Gasto mensal supera o salário fixo em <span style="color:var(--red);font-weight:500">R$ 2.308</span>. A comissão da Bruna está cobrindo o dia a dia em vez de ir para investimentos.</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7;padding-top:10px;border-top:1px solid var(--border)" id="sit-desc">—</div>
       </div>
       <div class="sec-title">Nota do mês</div>
       <div class="card">
@@ -715,6 +714,7 @@ function startSync() {
           if (el) el.textContent = 'Sincronizado · ' + new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
           renderFixedCosts();
           renderLancamentos();
+          renderDashboard();
         }
       }
     } catch(e) {}
@@ -794,6 +794,7 @@ async function doLogin() {
     return;
   }
   startSync();
+  document.getElementById('screen-app').classList.add('authenticated');
   showApp();
 }
 
@@ -804,6 +805,7 @@ function doLogout() {
   if (fbListener && fbDb) fbDb.ref(fbPath()).off('value', fbListener);
   fbListener = null; fbUser = null;
   APP.password = '';
+  document.getElementById('screen-app').classList.remove('authenticated');
   document.getElementById('login-input').value = '';
   showScreen('screen-login');
 }
@@ -819,8 +821,65 @@ function showApp() {
   renderMonthSelector();
   renderFixedCosts();
   renderLancamentos();
+  renderDashboard();
   renderCharts();
   setSyncStatus('ok');
+}
+
+function renderDashboard() {
+  const m = APP.currentMonth;
+  const d = APP.months[m] || {};
+  const inv = (d.investimentos_xp||0) + (d.investimentos_nubank||0);
+  const pl = (d.patrimonio_imovel||433000) + inv - (d.divida_imovel||0) - (d.divida_carro||0);
+  const gasto = d.gastos_cartao || 0;
+  const renda = d.renda_fixa || 15000;
+  const saldo = renda - gasto - (d.gastos_fixos||8564);
+
+  // KPIs
+  const kpiPl = document.getElementById('kpi-pl');
+  const kpiInv = document.getElementById('kpi-inv');
+  const kpiGasto = document.getElementById('kpi-gasto');
+  const kpiGastoSub = document.getElementById('kpi-gasto-sub');
+  const kpiSaldo = document.getElementById('kpi-saldo');
+  const kpiSaldoSub = document.getElementById('kpi-saldo-sub');
+  if (kpiPl) kpiPl.textContent = fmt(pl);
+  if (kpiInv) kpiInv.textContent = fmt(inv);
+  if (kpiGasto) kpiGasto.textContent = fmt(gasto);
+  if (kpiGastoSub) kpiGastoSub.textContent = Math.round(gasto/renda*100) + '% da renda fixa';
+  if (kpiSaldo) kpiSaldo.textContent = (saldo >= 0 ? '' : '−') + fmt(Math.abs(saldo));
+  if (kpiSaldoSub) kpiSaldoSub.textContent = saldo >= 0 ? 'Sobra do mês' : 'Coberto pela comissão';
+
+  // Barra patrimônio
+  const nwBar = document.getElementById('nw-bar');
+  const nwLeg = document.getElementById('nw-legend');
+  const imovel = d.patrimonio_imovel || 433000;
+  const total = imovel + inv;
+  const pctImovel = Math.round(imovel/total*100);
+  const pctInv = 100 - pctImovel;
+  if (nwBar) nwBar.innerHTML = '<div style="width:'+pctImovel+'%;background:#4f8ef7;height:100%"></div><div style="width:'+pctInv+'%;background:#22c55e;height:100%"></div>';
+  if (nwLeg) nwLeg.innerHTML =
+    '<span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#4f8ef7;border-radius:2px;display:inline-block"></span>Imóvel '+fmt(imovel)+'</span>'+
+    '<span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#22c55e;border-radius:2px;display:inline-block"></span>Invest. '+fmt(inv)+'</span>'+
+    '<span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#ef4444;border-radius:2px;display:inline-block"></span>Dívidas −'+fmt((d.divida_imovel||0)+(d.divida_carro||0))+'</span>';
+
+  // Situação
+  const sitTitulo = document.getElementById('sit-titulo');
+  const sitPl = document.getElementById('sit-pl');
+  const sitInv = document.getElementById('sit-inv');
+  const sitGasto = document.getElementById('sit-gasto');
+  const sitRenda = document.getElementById('sit-renda');
+  const sitDesc = document.getElementById('sit-desc');
+  if (sitTitulo) sitTitulo.textContent = 'Situação atual — ' + m;
+  if (sitPl) sitPl.textContent = fmt(pl);
+  if (sitInv) sitInv.textContent = fmt(inv);
+  if (sitGasto) sitGasto.textContent = fmt(gasto + (d.gastos_fixos||8564));
+  if (sitRenda) sitRenda.textContent = fmt(renda);
+  if (sitDesc) {
+    const deficit = gasto + (d.gastos_fixos||8564) - renda;
+    sitDesc.innerHTML = deficit > 0
+      ? 'Gasto mensal supera o salário fixo em <span style="color:var(--red);font-weight:500">'+fmt(deficit)+'</span>. A comissão está cobrindo o dia a dia em vez de ir para investimentos.'
+      : 'O salário cobre todas as despesas com <span style="color:var(--green);font-weight:500">'+fmt(Math.abs(deficit))+'</span> de sobra para investir.';
+  }
 }
 
 function switchTab(name, el) {
