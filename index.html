@@ -933,6 +933,8 @@ h1,h2{font-family:'DM Serif Display',serif}
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 'use strict';
@@ -1005,20 +1007,70 @@ let APP = {
   ]
 };
 
+// ══ FIREBASE ══════════════════════════════════════════════════
+const FB_CONFIG = {
+  apiKey: "AIzaSyBcpl3TR6jIogLJDilRcYqGHPMsVCwNMsY",
+  authDomain: "brude-financas.firebaseapp.com",
+  databaseURL: "https://brude-financas-default-rtdb.firebaseio.com",
+  projectId: "brude-financas",
+  storageBucket: "brude-financas.firebasestorage.app",
+  messagingSenderId: "787602543958",
+  appId: "1:787602543958:web:7f1ff769de9ab04cbfb2f7"
+};
+
+let fbApp = null;
+let fbDb = null;
+let fbListener = null;
+
+function initFirebase() {
+  try {
+    fbApp = firebase.initializeApp(FB_CONFIG);
+    fbDb = firebase.database();
+  } catch(e) { console.warn('Firebase init error:', e); }
+}
+
 async function saveData() {
   if (!APP.password) return;
   try {
     const enc = await CRYPTO.encrypt(APP, APP.password);
+    // Salva local sempre (rápido)
     localStorage.setItem('fo_data', enc);
-    setSyncStatus('ok');
-    if (GDRIVE_TOKEN) gdriveAutoBackup(); // fire-and-forget, sem await para não bloquear
-  } catch(e) { setSyncStatus('error'); }
+    // Salva no Firebase (sincronização entre dispositivos)
+    if (fbDb) {
+      await fbDb.ref('familia/dados').set({ enc, ts: Date.now() });
+      setSyncStatus('ok');
+    } else {
+      setSyncStatus('ok');
+    }
+    if (GDRIVE_TOKEN) gdriveAutoBackup();
+  } catch(e) { 
+    setSyncStatus('error');
+    console.error('saveData error:', e);
+  }
 }
 
 async function loadData(password) {
+  // Tenta carregar do Firebase primeiro (dados mais recentes)
+  if (fbDb) {
+    try {
+      setSyncStatus('syncing');
+      const snap = await fbDb.ref('familia/dados').get();
+      if (snap.exists()) {
+        const { enc } = snap.val();
+        const dec = await CRYPTO.decrypt(enc, password);
+        if (dec) {
+          APP = {...APP, ...dec, password};
+          localStorage.setItem('fo_data', enc); // atualiza local
+          return true;
+        } else {
+          return false; // senha errada
+        }
+      }
+    } catch(e) { console.warn('Firebase load error, falling back to local:', e); }
+  }
+  // Fallback: localStorage
   const raw = localStorage.getItem('fo_data');
   if (!raw) {
-    // First time — store with default password
     APP.password = password;
     await saveData();
     return true;
@@ -1029,16 +1081,45 @@ async function loadData(password) {
   return true;
 }
 
-// ══ LOGIN ═════════════════════════════════════════════════════
+function startFirebaseSync() {
+  if (!fbDb || !APP.password) return;
+  // Escuta mudanças em tempo real — atualiza app quando outro dispositivo salvar
+  if (fbListener) fbListener();
+  fbListener = fbDb.ref('familia/dados').on('value', async (snap) => {
+    if (!snap.exists() || !APP.password) return;
+    try {
+      const { enc, ts } = snap.val();
+      const localTs = parseInt(localStorage.getItem('fo_ts') || '0');
+      if (ts > localTs) {
+        const dec = await CRYPTO.decrypt(enc, APP.password);
+        if (dec) {
+          const pw = APP.password;
+          APP = {...APP, ...dec, password: pw};
+          localStorage.setItem('fo_data', enc);
+          localStorage.setItem('fo_ts', ts);
+          setSyncStatus('ok');
+          const el = document.getElementById('sync-status');
+          if (el) el.textContent = 'Sincronizado · ' + new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+        }
+      }
+    } catch(e) {}
+  });
+}
+
+// ══ STORAGE ═══════════════════════════════════════════════════
 async function doLogin() {
   const pw = document.getElementById('login-password').value;
   if (!pw) return;
+  const btn = document.querySelector('#screen-login .btn-primary');
+  if (btn) { btn.textContent = 'Entrando...'; btn.disabled = true; }
   const ok = await loadData(pw);
+  if (btn) { btn.textContent = 'Entrar'; btn.disabled = false; }
   if (!ok) {
     document.getElementById('login-error').style.display = 'block';
     return;
   }
   document.getElementById('login-error').style.display = 'none';
+  startFirebaseSync();
   showApp();
 }
 
@@ -1706,6 +1787,7 @@ function fmt(v) {
 }
 
 // ══ INIT ═══════════════════════════════════════════════════════
+initFirebase();
 updateGdriveStatus();
 
 // ══ SERVICE WORKER (PWA) ═══════════════════════════════════════
