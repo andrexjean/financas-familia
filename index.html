@@ -1108,6 +1108,27 @@ function startFirebaseSync() {
 
 // ══ STORAGE ═══════════════════════════════════════════════════
 async function doLogin() {
+  const senha = document.getElementById("login-password").value;
+
+  let email = "";
+
+  if (senha === "Andre123") {
+    email = "seu@email.com";
+  } else if (senha === "Bruna123") {
+    email = "bruna@email.com";
+  } else {
+    document.getElementById("login-error").style.display = "block";
+    return;
+  }
+
+  firebase.auth().signInWithEmailAndPassword(email, senha)
+    .then(() => {
+      showScreen('screen-app');
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+}
   const pw = document.getElementById('login-password').value;
   if (!pw) return;
   const btn = document.querySelector('#screen-login .btn-primary');
@@ -1126,9 +1147,9 @@ async function doLogin() {
 document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 function doLogout() {
-  APP.password = '';
-  showScreen('screen-login');
-  document.getElementById('login-password').value = '';
+  firebase.auth().signOut().then(() => {
+    showScreen('screen-login');
+  });
 }
 
 // ══ NAVIGATION ════════════════════════════════════════════════
@@ -1796,4 +1817,17 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 </body>
+  <!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBcpl3TR6jIogLJDilRcYqGHPMsVCwNMsY",
+  authDomain: "brude-financas.firebaseapp.com",
+  projectId: "brude-financas",
+};
+
+firebase.initializeApp(firebaseConfig);
+</script>
 </html>
