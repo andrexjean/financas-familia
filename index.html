@@ -255,7 +255,7 @@ h1,h2{font-family:'DM Serif Display',serif}
     </div>
     <div id="gate-error" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#ef4444;display:none;text-align:left;margin-bottom:12px">Código incorreto.</div>
     <button onclick="checkGate()" style="width:100%;background:#4f8ef7;color:#fff;border:none;border-radius:8px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer">Continuar</button>
-    <div style="font-size:11px;color:#4a5068;margin-top:1.5rem">Família Oliveira · Sistema privado</div>
+    <div style="font-size:11px;color:#4a5068;margin-top:1.5rem">Família Oliveira · Sistema privado<br><span style="color:#4a5068">Código padrão: <strong style="color:#7a82a0">Familia2026</strong></span></div>
   </div>
 </div>
 
@@ -302,7 +302,7 @@ h1,h2{font-family:'DM Serif Display',serif}
       <div class="tab" onclick="switchTab('fluxo',this)">Fluxo</div>
       <div class="tab" onclick="switchTab('investimentos',this)">Investimentos</div>
       <div class="tab" onclick="switchTab('dividas',this)">Dívidas</div>
-      <div class="tab" onclick="switchTab('upload',this)">Importar</div>
+      <div class="tab" onclick="switchTab('upload',this)">Lançamento</div>
       <div class="tab" onclick="switchTab('evolucao',this)">Evolução</div>
     </div>
 
@@ -372,13 +372,14 @@ h1,h2{font-family:'DM Serif Display',serif}
 
       <div class="card">
         <div class="card-title">Gastos fixos mensais <span class="bdg-red bdg">R$ 8.564</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Edite os custos fixos na aba <strong style="color:var(--accent)">Lançamento</strong>.</div>
         <div id="fixed-costs-list">
-          <div class="fixed-item"><div class="fixed-dot" style="background:#ef4444"></div><div class="fixed-name">Financiamento imóvel (Bradesco)</div><div class="fixed-val">R$ 2.358</div><button class="fixed-edit" onclick="editFixed(0)">editar</button></div>
-          <div class="fixed-item"><div class="fixed-dot" style="background:#ef4444"></div><div class="fixed-name">Financiamento carro (Bradesco)</div><div class="fixed-val">R$ 2.447</div><button class="fixed-edit" onclick="editFixed(1)">editar</button></div>
-          <div class="fixed-item"><div class="fixed-dot" style="background:#ef4444"></div><div class="fixed-name">Escola (2 filhos)</div><div class="fixed-val">R$ 2.600</div><button class="fixed-edit" onclick="editFixed(2)">editar</button></div>
-          <div class="fixed-item"><div class="fixed-dot" style="background:#f59e0b"></div><div class="fixed-name">Contas (ENEL + Vivo + SABESP)</div><div class="fixed-val">R$ 567</div><button class="fixed-edit" onclick="editFixed(3)">editar</button></div>
-          <div class="fixed-item"><div class="fixed-dot" style="background:#f59e0b"></div><div class="fixed-name">Seguros (Allianz + HDI)</div><div class="fixed-val">R$ 272</div><button class="fixed-edit" onclick="editFixed(4)">editar</button></div>
-          <div class="fixed-item"><div class="fixed-dot" style="background:#7a82a0"></div><div class="fixed-name">IPTU + Condomínio</div><div class="fixed-val">R$ 320</div><button class="fixed-edit" onclick="editFixed(5)">editar</button></div>
+          <div class="fixed-item"><div class="fixed-dot" style="background:#ef4444"></div><div class="fixed-name">Financiamento imóvel (Bradesco)</div><div class="fixed-val">R$ 2.358</div></div>
+          <div class="fixed-item"><div class="fixed-dot" style="background:#ef4444"></div><div class="fixed-name">Financiamento carro (Bradesco)</div><div class="fixed-val">R$ 2.447</div></div>
+          <div class="fixed-item"><div class="fixed-dot" style="background:#ef4444"></div><div class="fixed-name">Escola (2 filhos)</div><div class="fixed-val">R$ 2.600</div></div>
+          <div class="fixed-item"><div class="fixed-dot" style="background:#f59e0b"></div><div class="fixed-name">Contas (ENEL + Vivo + SABESP)</div><div class="fixed-val">R$ 567</div></div>
+          <div class="fixed-item"><div class="fixed-dot" style="background:#f59e0b"></div><div class="fixed-name">Seguros (Allianz + HDI)</div><div class="fixed-val">R$ 272</div></div>
+          <div class="fixed-item"><div class="fixed-dot" style="background:#7a82a0"></div><div class="fixed-name">IPTU + Condomínio</div><div class="fixed-val">R$ 320</div></div>
         </div>
       </div>
 
@@ -491,16 +492,21 @@ h1,h2{font-family:'DM Serif Display',serif}
       </div>
 
       <div class="sec-title">Lançamento manual rápido</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
         <button onclick="showModal('modal-add-gasto')" style="background:var(--red-dim);border:1px solid rgba(239,68,68,.3);border-radius:var(--r);padding:16px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif">
-          <div style="font-size:18px;margin-bottom:6px">−</div>
+          <div style="font-size:20px;margin-bottom:6px;color:var(--red)">−</div>
           <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:3px">Novo gasto</div>
-          <div style="font-size:11px;color:#f87171">Lançar despesa manualmente</div>
+          <div style="font-size:11px;color:#f87171">Lançar despesa</div>
         </button>
         <button onclick="showModal('modal-add-entrada')" style="background:var(--green-dim);border:1px solid rgba(34,197,94,.3);border-radius:var(--r);padding:16px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif">
-          <div style="font-size:18px;margin-bottom:6px">+</div>
+          <div style="font-size:20px;margin-bottom:6px;color:var(--green)">+</div>
           <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:3px">Nova entrada</div>
-          <div style="font-size:11px;color:#86efac">Lançar receita manualmente</div>
+          <div style="font-size:11px;color:#86efac">Lançar receita</div>
+        </button>
+        <button onclick="showModal('modal-add-custo-fixo')" style="background:var(--amber-dim);border:1px solid rgba(245,158,11,.3);border-radius:var(--r);padding:16px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif">
+          <div style="font-size:20px;margin-bottom:6px;color:var(--amber)">⚙</div>
+          <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:3px">Custo fixo</div>
+          <div style="font-size:11px;color:#fcd34d">Adicionar ou editar</div>
         </button>
       </div>
 
@@ -686,21 +692,57 @@ h1,h2{font-family:'DM Serif Display',serif}
     <!-- EVOLUÇÃO -->
     <div id="tab-evolucao" class="tab-content" style="display:none">
       <div class="card">
-        <div class="card-title">Patrimônio líquido — evolução</div>
+        <div class="card-title">Patrimônio líquido — evolução mensal</div>
         <div class="chart-wrap">
           <canvas id="chart-pl"></canvas>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Gastos vs renda — evolução</div>
+        <div class="card-title">Gastos vs renda — evolução mensal</div>
+        <div style="display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#4f8ef766;border:1px solid #4f8ef7;border-radius:2px;display:inline-block"></span>Renda fixa</span>
+          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#ef444466;border:1px solid #ef4444;border-radius:2px;display:inline-block"></span>Gastos cartão</span>
+        </div>
         <div class="chart-wrap">
           <canvas id="chart-gastos"></canvas>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Investimentos acumulados</div>
-        <div class="chart-wrap">
+        <div class="card-title">Investimentos — evolução acumulada</div>
+        <div style="display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#a78bfa;border-radius:2px;display:inline-block"></span>Total investido</span>
+          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#22c55e;border-radius:2px;display:inline-block"></span>XP Investimentos</span>
+          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#4f8ef7;border-radius:2px;display:inline-block"></span>Nubank</span>
+        </div>
+        <div class="chart-wrap" style="height:260px">
           <canvas id="chart-inv"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Rentabilidade vs CDI — histórico</div>
+        <div style="display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#22c55e;border-radius:2px;display:inline-block"></span>Portfólio XP</span>
+          <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#7a82a0;border-radius:2px;display:inline-block"></span>CDI</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart-rent"></canvas>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px">
+          <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">2024</div>
+            <div style="font-size:16px;font-weight:500;color:var(--green)">+10,62%</div>
+            <div style="font-size:10px;color:var(--muted)">102,7% CDI</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">2025</div>
+            <div style="font-size:16px;font-weight:500;color:var(--green)">+15,86%</div>
+            <div style="font-size:10px;color:var(--muted)">110,8% CDI</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">2026 (até abr)</div>
+            <div style="font-size:16px;font-weight:500;color:var(--green)">+2,77%</div>
+            <div style="font-size:10px;color:var(--muted)">99,2% CDI</div>
+          </div>
         </div>
       </div>
       <div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0">Os gráficos crescem conforme você importa dados mês a mês.</div>
@@ -755,6 +797,40 @@ h1,h2{font-family:'DM Serif Display',serif}
     <div class="month-grid" id="month-grid"></div>
     <div class="btn-row">
       <button class="btn-secondary" onclick="hideModal('modal-months')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CUSTO FIXO ══════════════════════════════════ -->
+<div class="modal-overlay" id="modal-add-custo-fixo">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('modal-add-custo-fixo')">×</button>
+    <h3 style="color:var(--amber)">Custos fixos</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Adicione um novo custo fixo ou edite os existentes.</div>
+    <div id="custos-fixos-modal-list" style="margin-bottom:16px"></div>
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:4px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Adicionar novo</div>
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" id="novo-fixo-nome" placeholder="Ex: Plano de saúde, Internet...">
+      </div>
+      <div class="form-group">
+        <label>Valor mensal (R$)</label>
+        <input type="number" id="novo-fixo-val" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Cor</label>
+        <select id="novo-fixo-cor" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+          <option value="#ef4444">Vermelho — obrigatório crítico</option>
+          <option value="#f59e0b">Âmbar — importante</option>
+          <option value="#7a82a0">Cinza — outros fixos</option>
+          <option value="#4f8ef7">Azul — serviços</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="hideModal('modal-add-custo-fixo')">Fechar</button>
+      <button class="btn-primary" style="flex:1;background:var(--amber);border-color:var(--amber)" onclick="adicionarCustoFixo()">Adicionar</button>
     </div>
   </div>
 </div>
@@ -1248,6 +1324,59 @@ async function restoreBackup(e) {
   renderCharts();
 }
 
+// ══ CUSTO FIXO MODAL ══════════════════════════════════════════
+function showModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'modal-add-gasto' || id === 'modal-add-entrada') initDatas();
+  if (id === 'modal-add-custo-fixo') renderCustosFixosModal();
+}
+
+function renderCustosFixosModal() {
+  const el = document.getElementById('custos-fixos-modal-list');
+  if (!el) return;
+  el.innerHTML = APP.fixedCosts.map((f, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <div style="width:8px;height:8px;border-radius:50%;background:${f.color};flex-shrink:0"></div>
+      <div style="flex:1">${f.name}</div>
+      <input type="number" value="${f.val}" step="0.01"
+        onchange="APP.fixedCosts[${i}].val=parseFloat(this.value)||0;saveData();renderFluxoFixos()"
+        style="width:90px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;text-align:right;font-family:'DM Sans',sans-serif;outline:none">
+      <span onclick="removerCustoFixo(${i})" style="color:var(--muted2);cursor:pointer;font-size:16px" title="Remover">×</span>
+    </div>
+  `).join('');
+}
+
+async function adicionarCustoFixo() {
+  const nome = document.getElementById('novo-fixo-nome').value.trim();
+  const val = parseFloat(document.getElementById('novo-fixo-val').value);
+  const cor = document.getElementById('novo-fixo-cor').value;
+  if (!nome || !val || val <= 0) { alert('Preencha nome e valor.'); return; }
+  APP.fixedCosts.push({name: nome, val, color: cor});
+  document.getElementById('novo-fixo-nome').value = '';
+  document.getElementById('novo-fixo-val').value = '';
+  await saveData();
+  renderCustosFixosModal();
+  renderFluxoFixos();
+}
+
+async function removerCustoFixo(i) {
+  if (!confirm('Remover "' + APP.fixedCosts[i].name + '"?')) return;
+  APP.fixedCosts.splice(i, 1);
+  await saveData();
+  renderCustosFixosModal();
+  renderFluxoFixos();
+}
+
+function renderFluxoFixos() {
+  const el = document.getElementById('fixed-costs-list');
+  if (!el) return;
+  let total = 0;
+  el.innerHTML = APP.fixedCosts.map(f => {
+    total += f.val;
+    return `<div class="fixed-item"><div class="fixed-dot" style="background:${f.color}"></div><div class="fixed-name">${f.name}</div><div class="fixed-val">${fmt(f.val)}</div></div>`;
+  }).join('');
+}
+
 // ══ CHARTS ════════════════════════════════════════════════════
 let charts = {};
 
@@ -1259,53 +1388,111 @@ function renderCharts() {
   });
   const gastos = months.map(m => APP.months[m].gastos_cartao||0);
   const renda = months.map(m => APP.months[m].renda_fixa||15000);
-  const inv = months.map(m => (APP.months[m].investimentos_xp||0) + (APP.months[m].investimentos_nubank||0));
+  const invXP = months.map(m => APP.months[m].investimentos_xp||0);
+  const invNu = months.map(m => APP.months[m].investimentos_nubank||0);
+  const invTotal = months.map((m,i) => invXP[i] + invNu[i]);
 
-  const cfg = (labels, datasets, type='line') => ({
-    type, data:{labels, datasets},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a82a0',font:{size:11}}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a82a0',font:{size:11},callback:v=>'R$'+Math.round(v/1000)+'k'}}
-      }
-    }
-  });
-
-  const ds = (data, color, label) => ({label, data, borderColor:color, backgroundColor:color+'22', fill:true, tension:.4, pointRadius:4, pointBackgroundColor:color, borderWidth:2});
+  // Rentabilidade histórica (dados reais XP)
+  const rentMeses = ['Jan/24','Fev/24','Mar/24','Abr/24','Mai/24','Jun/24','Jul/24','Ago/24','Set/24','Out/24','Nov/24','Dez/24','Jan/25','Fev/25','Mar/25','Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26'];
+  const rentPort = [0.40,0.80,0.91,0.78,0.86,0.83,1.02,0.96,0.89,0.97,0.79,0.94,1.13,0.96,1.37,1.41,1.93,0.83,1.06,1.06,1.58,1.02,1.10,1.37,1.42,1.27,0.06];
+  const rentCDI  = [0.48,0.81,0.83,0.89,0.84,0.79,0.91,0.87,0.83,0.93,0.77,0.93,1.01,0.99,0.96,1.06,1.14,1.10,1.27,1.16,1.22,1.27,1.06,1.22,1.16,1.00,0.61];
 
   const makeChart = (id, config) => {
-    if (charts[id]) { charts[id].destroy(); }
+    if (charts[id]) charts[id].destroy();
     const canvas = document.getElementById(id);
     if (!canvas) return;
     charts[id] = new Chart(canvas, config);
   };
 
-  makeChart('chart-pl', cfg(months, [ds(pl,'#22c55e','Patrimônio Líquido')]));
-  makeChart('chart-gastos', {
-    type:'bar', data:{labels:months, datasets:[
-      {label:'Renda fixa', data:renda, backgroundColor:'#4f8ef766', borderColor:'#4f8ef7', borderWidth:1},
-      {label:'Gastos cartão', data:gastos, backgroundColor:'#ef444466', borderColor:'#ef4444', borderWidth:1}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a82a0',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a82a0',font:{size:11},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}
+  const baseOpts = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a82a0',font:{size:10},maxRotation:45}},
+      y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a82a0',font:{size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}
+    }
+  };
+
+  const pctOpts = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a82a0',font:{size:10},maxRotation:45,maxTicksLimit:12}},
+      y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a82a0',font:{size:10},callback:v=>v.toFixed(1)+'%'}}
+    }
+  };
+
+  const ds = (data,color,label,fill=true) => ({
+    label, data, borderColor:color,
+    backgroundColor: fill ? color+'22' : 'transparent',
+    fill, tension:.4, pointRadius:3, pointBackgroundColor:color, borderWidth:2
   });
-  makeChart('chart-inv', cfg(months, [ds(inv,'#a78bfa','Investimentos')]));
+
+  // Patrimônio líquido
+  makeChart('chart-pl', {type:'line', data:{labels:months, datasets:[ds(pl,'#22c55e','PL')]}, options:baseOpts});
+
+  // Gastos vs renda
+  makeChart('chart-gastos', {
+    type:'bar',
+    data:{labels:months, datasets:[
+      {label:'Renda fixa',data:renda,backgroundColor:'#4f8ef744',borderColor:'#4f8ef7',borderWidth:1,borderRadius:4},
+      {label:'Gastos',data:gastos,backgroundColor:'#ef444444',borderColor:'#ef4444',borderWidth:1,borderRadius:4}
+    ]},
+    options:{...baseOpts}
+  });
+
+  // Investimentos — linha empilhada XP + Nubank + Total
+  makeChart('chart-inv', {
+    type:'line',
+    data:{labels:months, datasets:[
+      ds(invTotal,'#a78bfa','Total',true),
+      ds(invXP,'#22c55e','XP',false),
+      ds(invNu,'#4f8ef7','Nubank',false)
+    ]},
+    options:{...baseOpts, scales:{...baseOpts.scales, y:{...baseOpts.scales.y, beginAtZero:true}}}
+  });
+
+  // Rentabilidade histórica
+  makeChart('chart-rent', {
+    type:'line',
+    data:{labels:rentMeses, datasets:[
+      {label:'Portfólio',data:rentPort,borderColor:'#22c55e',backgroundColor:'#22c55e22',fill:true,tension:.3,pointRadius:2,pointBackgroundColor:'#22c55e',borderWidth:2},
+      {label:'CDI',data:rentCDI,borderColor:'#7a82a0',backgroundColor:'transparent',fill:false,tension:.3,pointRadius:2,pointBackgroundColor:'#7a82a0',borderWidth:1.5,borderDash:[4,3]}
+    ]},
+    options:pctOpts
+  });
 }
 
 // ══ GATE ══════════════════════════════════════════════════════
 const GATE_KEY = 'fo_gate';
-const DEFAULT_GATE = 'Familia@2026';
+const DEFAULT_GATE = 'Familia2026';
+
+function simpleHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return 'h_' + hash.toString(36);
+}
 
 function getGateHash() {
-  return localStorage.getItem(GATE_KEY) || btoa(DEFAULT_GATE);
+  const stored = localStorage.getItem(GATE_KEY);
+  // Se não tem nada ou é formato antigo (btoa = não começa com 'h_'), reseta para padrão
+  if (!stored || !stored.startsWith('h_')) {
+    const h = simpleHash(DEFAULT_GATE);
+    localStorage.setItem(GATE_KEY, h);
+    return h;
+  }
+  return stored;
 }
 
 async function checkGate() {
-  const pw = document.getElementById('gate-password').value;
+  const pw = document.getElementById('gate-password').value.trim();
   if (!pw) return;
   const stored = getGateHash();
-  const entered = btoa(pw);
+  const entered = simpleHash(pw);
   if (entered !== stored) {
     document.getElementById('gate-error').style.display = 'block';
     document.getElementById('gate-password').value = '';
@@ -1317,11 +1504,11 @@ async function checkGate() {
 }
 
 function saveGate() {
-  const v = document.getElementById('new-gate').value;
+  const v = document.getElementById('new-gate').value.trim();
   if (!v || v.length < 4) { alert('Código muito curto. Use pelo menos 4 caracteres.'); return; }
-  localStorage.setItem(GATE_KEY, btoa(v));
+  localStorage.setItem(GATE_KEY, simpleHash(v));
   document.getElementById('new-gate').value = '';
-  alert('Código de acesso atualizado!');
+  alert('Código de acesso atualizado! Use o novo código no próximo acesso.'); 
 }
 
 document.getElementById('gate-password').addEventListener('keydown', e => { if(e.key==='Enter') checkGate(); });
