@@ -277,104 +277,42 @@ h1,h2,h3{font-family:'DM Serif Display',serif}
     <!-- FLUXO -->
     <div id="tab-fluxo" class="tab-content" style="display:none">
       <div class="kpi-grid">
-        <div class="kpi green"><div class="kpi-label">Salário fixo</div><div class="kpi-val">R$ 15.000</div><div class="kpi-sub">André R$7k + Bruna R$8k</div></div>
-        <div class="kpi purple"><div class="kpi-label">Comissão Bruna</div><div class="kpi-val">~R$ 5.000</div><div class="kpi-sub">100% para investimento</div></div>
-        <div class="kpi red"><div class="kpi-label">Total saídas</div><div class="kpi-val">R$ 17.308</div><div class="kpi-sub">Fixo R$8.564 + cartão R$8.744</div></div>
-        <div class="kpi amber"><div class="kpi-label">Déficit (salário)</div><div class="kpi-val">R$ 2.308</div><div class="kpi-sub">Coberto pela comissão</div></div>
+        <div class="kpi green"><div class="kpi-label">Salário fixo</div><div class="kpi-val" id="flx-renda">—</div><div class="kpi-sub" id="flx-renda-sub">—</div></div>
+        <div class="kpi purple"><div class="kpi-label">Comissão Bruna</div><div class="kpi-val" id="flx-comissao">—</div><div class="kpi-sub">100% para investimento</div></div>
+        <div class="kpi red"><div class="kpi-label">Total saídas</div><div class="kpi-val" id="flx-saidas">—</div><div class="kpi-sub" id="flx-saidas-sub">—</div></div>
+        <div class="kpi amber"><div class="kpi-label">Déficit (salário)</div><div class="kpi-val" id="flx-deficit">—</div><div class="kpi-sub" id="flx-deficit-sub">—</div></div>
       </div>
       <div class="card">
-        <div class="card-title">Gastos fixos mensais <span class="bdg bdg-red">R$ 8.564</span></div>
+        <div class="card-title">Gastos fixos mensais <span class="bdg bdg-red" id="flx-fixos-total">—</span></div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Para editar, use a aba <strong style="color:var(--accent)">Lançamento</strong>.</div>
         <div id="fixed-costs-list"></div>
       </div>
       <div class="card">
-        <div class="card-title">Gastos variáveis — cartão <span class="bdg bdg-red">Abr/2026</span></div>
-        <div class="bar-wrap"><div class="bar-label"><span class="name">Compras online</span><span><span class="bdg bdg-red">R$ 2.726</span> meta R$700</span></div><div class="bar-track"><div class="bar-fill over" style="width:100%"></div></div></div>
-        <div class="bar-wrap"><div class="bar-label"><span class="name">Alimentação fora</span><span><span class="bdg bdg-red">R$ 1.881</span> meta R$800</span></div><div class="bar-track"><div class="bar-fill over" style="width:100%"></div></div></div>
-        <div class="bar-wrap"><div class="bar-label"><span class="name">Viagem (parcelas)</span><span><span class="bdg bdg-gray">R$ 1.076</span></span></div><div class="bar-track"><div class="bar-fill warn" style="width:60%"></div></div></div>
-        <div class="bar-wrap"><div class="bar-label"><span class="name">Combustível</span><span><span class="bdg bdg-amber">R$ 718</span> meta R$600</span></div><div class="bar-track"><div class="bar-fill warn" style="width:100%"></div></div></div>
-        <div class="bar-wrap"><div class="bar-label"><span class="name">Serviços pessoais</span><span><span class="bdg bdg-amber">R$ 476</span> meta R$300</span></div><div class="bar-track"><div class="bar-fill warn" style="width:100%"></div></div></div>
-        <div class="bar-wrap"><div class="bar-label"><span class="name">Supermercado</span><span><span class="bdg bdg-green">R$ 470</span> meta R$500</span></div><div class="bar-track"><div class="bar-fill ok" style="width:94%"></div></div></div>
-        <div class="bar-wrap"><div class="bar-label"><span class="name">Bebidas</span><span><span class="bdg bdg-red">R$ 390</span> meta R$150</span></div><div class="bar-track"><div class="bar-fill over" style="width:100%"></div></div></div>
-        <div class="bar-wrap"><div class="bar-label"><span class="name">Assinaturas</span><span><span class="bdg bdg-amber">R$ 388</span> meta R$250</span></div><div class="bar-track"><div class="bar-fill warn" style="width:100%"></div></div></div>
+        <div class="card-title">Gastos variáveis — cartão <span class="bdg bdg-red" id="flx-mes-label">—</span></div>
+        <div id="flx-variaveis"></div>
       </div>
     </div>
 
     <!-- INVESTIMENTOS -->
     <div id="tab-investimentos" class="tab-content" style="display:none">
       <div class="kpi-grid">
-        <div class="kpi green"><div class="kpi-label">Total investido</div><div class="kpi-val">R$ 70.330</div><div class="kpi-sub">XP + Nubank</div></div>
+        <div class="kpi green"><div class="kpi-label">Total investido</div><div class="kpi-val" id="inv-total">—</div><div class="kpi-sub">XP + Nubank</div></div>
         <div class="kpi blue"><div class="kpi-label">XP — rent. 24M</div><div class="kpi-val">+28,98%</div><div class="kpi-sub">107,5% do CDI</div></div>
-        <div class="kpi purple"><div class="kpi-label">Proventos abr/26</div><div class="kpi-val">R$ 143,92</div><div class="kpi-sub">14–15 de abril</div></div>
-        <div class="kpi green"><div class="kpi-label">Reserva emergência</div><div class="kpi-val">128%</div><div class="kpi-sub">Meta: R$ 55.000 ✓</div></div>
+        <div class="kpi purple"><div class="kpi-label">Proventos abr/26</div><div class="kpi-val" id="inv-proventos">—</div><div class="kpi-sub">14–15 de abril</div></div>
+        <div class="kpi green"><div class="kpi-label">Reserva emergência</div><div class="kpi-val" id="inv-reserva">—</div><div class="kpi-sub" id="inv-reserva-sub">—</div></div>
       </div>
-      <div class="card">
-        <div class="card-title">XP Investimentos — R$ 59.730 <span style="font-size:10px;color:var(--muted)">ref. 06/04/2026</span></div>
-        <div class="alloc-row"><div class="alloc-dot" style="background:#4f8ef7"></div><div class="alloc-name">Pré Fixado (CDBs · LCA CNH)</div><div class="alloc-pct">44,2%</div><div class="alloc-val">R$ 26.406</div></div>
-        <div class="alloc-row"><div class="alloc-dot" style="background:#a78bfa"></div><div class="alloc-name">FII (7 fundos)</div><div class="alloc-pct">41,3%</div><div class="alloc-val">R$ 24.656</div></div>
-        <div class="alloc-row"><div class="alloc-dot" style="background:#f59e0b"></div><div class="alloc-name">Inflação (IPCA+8,1%)</div><div class="alloc-pct">8,75%</div><div class="alloc-val">R$ 5.228</div></div>
-        <div class="alloc-row"><div class="alloc-dot" style="background:#22c55e"></div><div class="alloc-name">Pós Fixado (LCI BRB 89% CDI)</div><div class="alloc-pct">3,6%</div><div class="alloc-val">R$ 2.146</div></div>
-        <div class="alloc-row"><div class="alloc-dot" style="background:#1d9e75"></div><div class="alloc-name">IVVB11 (ETF S&P 500)</div><div class="alloc-pct">1,9%</div><div class="alloc-val">R$ 1.151</div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">FII — posição e proventos abril</div>
-        <div class="card-row"><span class="lbl">CPTS11 (636 cotas)</span><span class="val" style="color:var(--green)">+13,75% · R$ 5.101</span></div>
-        <div class="card-row"><span class="lbl">KNCR11 (39 cotas)</span><span class="val" style="color:var(--green)">+12,02% · R$ 4.114</span></div>
-        <div class="card-row"><span class="lbl">MXRF11 (400 cotas)</span><span class="val" style="color:var(--green)">+14,19% · R$ 3.908</span></div>
-        <div class="card-row"><span class="lbl">KNRI11 (23 cotas)</span><span class="val" style="color:var(--green)">+14,45% · R$ 3.841</span></div>
-        <div class="card-row"><span class="lbl">HGLG11 (19 cotas)</span><span class="val" style="color:var(--green)">+6,17% · R$ 2.981</span></div>
-        <div class="card-row"><span class="lbl">XPML11 (22 cotas)</span><span class="val" style="color:var(--green)">+9,62% · R$ 2.409</span></div>
-        <div class="card-row"><span class="lbl">XPLG11 (23 cotas)</span><span class="val" style="color:var(--green)">+7,84% · R$ 2.302</span></div>
-        <div class="card-row"><span class="lbl" style="font-weight:500">Total proventos abr/26</span><span class="val" style="color:var(--purple);font-weight:600">R$ 143,92</span></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Nubank caixinha turbo</div>
-        <div class="card-row"><span class="lbl">Saldo</span><span class="val" style="color:var(--green)">R$ 10.600</span></div>
-        <div class="card-row"><span class="lbl">Liquidez</span><span class="val">Diária</span></div>
-        <div class="card-row"><span class="lbl">Uso</span><span class="val">Reserva imediata</span></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Estratégia de aportes</div>
-        <div class="card-row"><span class="lbl">Do salário fixo / mês</span><span class="val" style="color:var(--accent)">R$ 1.000</span></div>
-        <div class="card-row"><span class="lbl">Da comissão Bruna</span><span class="val" style="color:var(--purple)">~R$ 5.000 (100%)</span></div>
-        <div class="card-row"><span class="lbl">Destino comissão</span><span class="val">50% FII + 50% RF</span></div>
-        <div class="card-row"><span class="lbl">Total potencial / mês</span><span class="val" style="color:var(--green)">~R$ 6.000</span></div>
-        <div class="card-row"><span class="lbl">CDB XP vence</span><span class="val" style="color:var(--amber)">Jun/2026 · R$ 3.350</span></div>
-      </div>
+      <div id="inv-cards"></div>
     </div>
 
     <!-- DÍVIDAS -->
     <div id="tab-dividas" class="tab-content" style="display:none">
       <div class="kpi-grid">
-        <div class="kpi red"><div class="kpi-label">Dívidas totais</div><div class="kpi-val">R$ 300.430</div><div class="kpi-sub">Imóvel + Carro</div></div>
-        <div class="kpi green"><div class="kpi-label">Equity imóvel</div><div class="kpi-val">R$ 193.710</div><div class="kpi-sub">Valor − Saldo devedor</div></div>
-        <div class="kpi amber"><div class="kpi-label">Parcela mensal total</div><div class="kpi-val">R$ 4.805</div><div class="kpi-sub">Imóvel + carro</div></div>
+        <div class="kpi red"><div class="kpi-label">Dívidas totais</div><div class="kpi-val" id="div-total">—</div><div class="kpi-sub">Imóvel + Carro</div></div>
+        <div class="kpi green"><div class="kpi-label">Equity imóvel</div><div class="kpi-val" id="div-equity">—</div><div class="kpi-sub">Valor − Saldo devedor</div></div>
+        <div class="kpi amber"><div class="kpi-label">Parcela mensal total</div><div class="kpi-val" id="div-parcela">—</div><div class="kpi-sub">Imóvel + carro</div></div>
         <div class="kpi blue"><div class="kpi-label">Carro quitado em</div><div class="kpi-val">Out/2028</div><div class="kpi-sub">31 parcelas restantes</div></div>
       </div>
-      <div class="card">
-        <div class="card-title">Imóvel · Bradesco contrato 947943-0</div>
-        <div class="card-row"><span class="lbl">Valor financiado original</span><span class="val">R$ 310.000</span></div>
-        <div class="card-row"><span class="lbl">Saldo devedor atual</span><span class="val" style="color:var(--red)">R$ 239.290</span></div>
-        <div class="card-row"><span class="lbl">Valor de mercado</span><span class="val" style="color:var(--green)">R$ 433.000</span></div>
-        <div class="card-row"><span class="lbl">Equity</span><span class="val" style="color:var(--green)">R$ 193.710</span></div>
-        <div class="card-row"><span class="lbl">Parcela atual</span><span class="val" style="color:var(--red)">R$ 2.358/mês</span></div>
-        <div class="card-row"><span class="lbl">Parcela / Total</span><span class="val">84 de 360</span></div>
-        <div class="card-row"><span class="lbl">Taxa</span><span class="val">7,07% a.a. (TR + CESH)</span></div>
-        <div class="card-row"><span class="lbl">Sistema</span><span class="val">SAC · Poupança</span></div>
-        <div class="card-row"><span class="lbl">Término previsto</span><span class="val">Abril/2049</span></div>
-        <div class="card-row"><span class="lbl">FGTS já utilizado</span><span class="val" style="color:var(--green)">R$ 29.246</span></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Carro · Bradesco contrato 20040082802</div>
-        <div class="card-row"><span class="lbl">Valor liberado</span><span class="val">R$ 91.111</span></div>
-        <div class="card-row"><span class="lbl">Saldo restante</span><span class="val" style="color:var(--red)">R$ 61.140</span></div>
-        <div class="card-row"><span class="lbl">Parcela</span><span class="val" style="color:var(--red)">R$ 2.447/mês</span></div>
-        <div class="card-row"><span class="lbl">Parcelas pagas / total</span><span class="val">17 de 48</span></div>
-        <div class="card-row"><span class="lbl">Taxa</span><span class="val" style="color:var(--red)">13,89% a.a. — alta!</span></div>
-        <div class="card-row"><span class="lbl">Término previsto</span><span class="val">Outubro/2028</span></div>
-        <div class="card-row"><span class="lbl">Parcelas antecipadas</span><span class="val" style="color:var(--green)">47 e 48 já pagas</span></div>
-      </div>
-      <div class="alert amber"><div class="alert-title">Carro: taxa de 13,89% a.a. é a dívida mais cara</div>Quando a comissão da Bruna vier acima de R$ 7.000, vale antecipar parcelas. Cada R$ 10.000 antecipado economiza ~R$ 1.389 em juros.</div>
+      <div id="div-cards"></div>
     </div>
 
     <!-- LANÇAMENTO -->
@@ -715,6 +653,9 @@ function startSync() {
           renderFixedCosts();
           renderLancamentos();
           renderDashboard();
+          renderFluxo();
+          renderInvestimentos();
+          renderDividas();
         }
       }
     } catch(e) {}
@@ -822,8 +763,139 @@ function showApp() {
   renderFixedCosts();
   renderLancamentos();
   renderDashboard();
+  renderFluxo();
+  renderInvestimentos();
+  renderDividas();
   renderCharts();
   setSyncStatus('ok');
+}
+
+function renderFluxo() {
+  const m = APP.currentMonth;
+  const d = APP.months[m] || {};
+  const renda = d.renda_fixa || 15000;
+  const comissao = d.comissao || 5000;
+  const fixos = d.gastos_fixos || APP.fixedCosts.reduce((a,f)=>a+f.val,0);
+  const cartao = d.gastos_cartao || 0;
+  const saidas = fixos + cartao;
+  const deficit = saidas - renda;
+
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('flx-renda', fmt(renda));
+  set('flx-renda-sub', 'André R$7k + Bruna R$8k');
+  set('flx-comissao', '~'+fmt(comissao));
+  set('flx-saidas', fmt(saidas));
+  set('flx-saidas-sub', 'Fixo '+fmt(fixos)+' + cartão '+fmt(cartao));
+  set('flx-deficit', fmt(Math.abs(deficit)));
+  set('flx-deficit-sub', deficit > 0 ? 'Coberto pela comissão' : 'Sobra do mês');
+  set('flx-fixos-total', fmt(fixos));
+  set('flx-mes-label', m);
+
+  const cats = d.categorias || {};
+  const metas = {'Compras Online':700,'Alimentação fora':800,'Combustível':600,'Serviços Pessoais':300,'Supermercado':500,'Bebidas':150,'Assinaturas':250,'Viagem':0};
+  const el = document.getElementById('flx-variaveis');
+  if (!el) return;
+  el.innerHTML = Object.entries(cats).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([cat,val])=>{
+    const meta = metas[cat]||0;
+    const pct = meta ? Math.min(100,Math.round(val/meta*100)) : 50;
+    const cls = !meta ? 'warn' : val>meta ? 'over' : val>meta*0.85 ? 'warn' : 'ok';
+    const bdgCls = cls==='over'?'bdg-red':cls==='warn'?'bdg-amber':'bdg-green';
+    return '<div class="bar-wrap"><div class="bar-label"><span class="name">'+cat+'</span><span><span class="bdg '+bdgCls+'">'+fmt(val)+'</span>'+(meta?' meta '+fmt(meta):'')+'</span></div><div class="bar-track"><div class="bar-fill '+cls+'" style="width:'+pct+'%"></div></div></div>';
+  }).join('');
+}
+
+function renderInvestimentos() {
+  const m = APP.currentMonth;
+  const d = APP.months[m] || {};
+  const xp = d.investimentos_xp || 59730;
+  const nu = d.investimentos_nubank || 10600;
+  const total = xp + nu;
+  const meta = 55000;
+  const pct = Math.round(total/meta*100);
+
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('inv-total', fmt(total));
+  set('inv-proventos', 'R$ 143,92');
+  set('inv-reserva', pct+'%');
+  set('inv-reserva-sub', 'Meta: '+fmt(meta)+' '+(total>=meta?'✓':''));
+
+  const el = document.getElementById('inv-cards');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-title">XP Investimentos — ${fmt(xp)} <span style="font-size:10px;color:var(--muted)">ref. 06/04/2026</span></div>
+      <div class="alloc-row"><div class="alloc-dot" style="background:#4f8ef7"></div><div class="alloc-name">Pré Fixado (CDBs · LCA CNH)</div><div class="alloc-pct">44,2%</div><div class="alloc-val">${fmt(xp*0.442)}</div></div>
+      <div class="alloc-row"><div class="alloc-dot" style="background:#a78bfa"></div><div class="alloc-name">FII (7 fundos)</div><div class="alloc-pct">41,3%</div><div class="alloc-val">${fmt(xp*0.413)}</div></div>
+      <div class="alloc-row"><div class="alloc-dot" style="background:#f59e0b"></div><div class="alloc-name">Inflação (IPCA+8,1%)</div><div class="alloc-pct">8,75%</div><div class="alloc-val">${fmt(xp*0.0875)}</div></div>
+      <div class="alloc-row"><div class="alloc-dot" style="background:#22c55e"></div><div class="alloc-name">Pós Fixado (LCI BRB 89% CDI)</div><div class="alloc-pct">3,6%</div><div class="alloc-val">${fmt(xp*0.036)}</div></div>
+      <div class="alloc-row"><div class="alloc-dot" style="background:#1d9e75"></div><div class="alloc-name">IVVB11 (ETF S&P 500)</div><div class="alloc-pct">1,9%</div><div class="alloc-val">${fmt(xp*0.019)}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">FII — posição e proventos</div>
+      <div class="card-row"><span class="lbl">CPTS11 (636 cotas)</span><span class="val" style="color:var(--green)">+13,75% · R$ 5.101</span></div>
+      <div class="card-row"><span class="lbl">KNCR11 (39 cotas)</span><span class="val" style="color:var(--green)">+12,02% · R$ 4.114</span></div>
+      <div class="card-row"><span class="lbl">MXRF11 (400 cotas)</span><span class="val" style="color:var(--green)">+14,19% · R$ 3.908</span></div>
+      <div class="card-row"><span class="lbl">KNRI11 (23 cotas)</span><span class="val" style="color:var(--green)">+14,45% · R$ 3.841</span></div>
+      <div class="card-row"><span class="lbl">HGLG11 (19 cotas)</span><span class="val" style="color:var(--green)">+6,17% · R$ 2.981</span></div>
+      <div class="card-row"><span class="lbl">XPML11 (22 cotas)</span><span class="val" style="color:var(--green)">+9,62% · R$ 2.409</span></div>
+      <div class="card-row"><span class="lbl">XPLG11 (23 cotas)</span><span class="val" style="color:var(--green)">+7,84% · R$ 2.302</span></div>
+      <div class="card-row"><span class="lbl" style="font-weight:500">Total proventos</span><span class="val" style="color:var(--purple);font-weight:600">R$ 143,92</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Nubank caixinha turbo</div>
+      <div class="card-row"><span class="lbl">Saldo</span><span class="val" style="color:var(--green)">${fmt(nu)}</span></div>
+      <div class="card-row"><span class="lbl">Liquidez</span><span class="val">Diária</span></div>
+      <div class="card-row"><span class="lbl">Uso</span><span class="val">Reserva imediata</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Estratégia de aportes</div>
+      <div class="card-row"><span class="lbl">Do salário fixo / mês</span><span class="val" style="color:var(--accent)">R$ 1.000</span></div>
+      <div class="card-row"><span class="lbl">Da comissão Bruna</span><span class="val" style="color:var(--purple)">~R$ 5.000 (100%)</span></div>
+      <div class="card-row"><span class="lbl">Destino comissão</span><span class="val">50% FII + 50% RF</span></div>
+      <div class="card-row"><span class="lbl">Total potencial / mês</span><span class="val" style="color:var(--green)">~R$ 6.000</span></div>
+      <div class="card-row"><span class="lbl">CDB XP vence</span><span class="val" style="color:var(--amber)">Jun/2026 · R$ 3.350</span></div>
+    </div>`;
+}
+
+function renderDividas() {
+  const m = APP.currentMonth;
+  const d = APP.months[m] || {};
+  const divImovel = d.divida_imovel || 239290;
+  const divCarro = d.divida_carro || 61140;
+  const divTotal = divImovel + divCarro;
+  const imovel = d.patrimonio_imovel || 433000;
+  const equity = imovel - divImovel;
+  const parcImovel = d.parcela_imovel || 2358;
+  const parcCarro = d.parcela_carro || 2447;
+
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('div-total', fmt(divTotal));
+  set('div-equity', fmt(equity));
+  set('div-parcela', fmt(parcImovel+parcCarro));
+
+  const el = document.getElementById('div-cards');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-title">Imóvel · Bradesco</div>
+      <div class="card-row"><span class="lbl">Saldo devedor</span><span class="val" style="color:var(--red)">${fmt(divImovel)}</span></div>
+      <div class="card-row"><span class="lbl">Valor de mercado</span><span class="val" style="color:var(--green)">${fmt(imovel)}</span></div>
+      <div class="card-row"><span class="lbl">Equity</span><span class="val" style="color:var(--green)">${fmt(equity)}</span></div>
+      <div class="card-row"><span class="lbl">Parcela atual</span><span class="val" style="color:var(--red)">${fmt(parcImovel)}/mês</span></div>
+      <div class="card-row"><span class="lbl">Parcela / Total</span><span class="val">84 de 360</span></div>
+      <div class="card-row"><span class="lbl">Taxa</span><span class="val">7,07% a.a. (TR + CESH)</span></div>
+      <div class="card-row"><span class="lbl">Término previsto</span><span class="val">Abril/2049</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Carro · Bradesco</div>
+      <div class="card-row"><span class="lbl">Saldo restante</span><span class="val" style="color:var(--red)">${fmt(divCarro)}</span></div>
+      <div class="card-row"><span class="lbl">Parcela</span><span class="val" style="color:var(--red)">${fmt(parcCarro)}/mês</span></div>
+      <div class="card-row"><span class="lbl">Parcelas pagas / total</span><span class="val">17 de 48</span></div>
+      <div class="card-row"><span class="lbl">Taxa</span><span class="val" style="color:var(--red)">13,89% a.a. — alta!</span></div>
+      <div class="card-row"><span class="lbl">Término previsto</span><span class="val">Outubro/2028</span></div>
+      <div class="card-row"><span class="lbl">Parcelas antecipadas</span><span class="val" style="color:var(--green)">47 e 48 já pagas</span></div>
+    </div>
+    <div class="alert amber"><div class="alert-title">Carro: taxa de 13,89% a.a. é a dívida mais cara</div>Quando a comissão da Bruna vier acima de R$ 7.000, vale antecipar parcelas. Cada R$ 10.000 antecipado economiza ~R$ 1.389 em juros.</div>`;
 }
 
 function renderDashboard() {
