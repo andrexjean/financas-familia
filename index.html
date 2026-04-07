@@ -1926,6 +1926,16 @@ updateGdriveStatus();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
+
+function checkGate() {
+  const code = document.getElementById("gate-code").value;
+
+  if (code === "Familia2026") {
+    showScreen('screen-login');
+  } else {
+    alert("Código incorreto");
+  }
+}
 </script>
 </body>
 </html>
