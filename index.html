@@ -235,10 +235,39 @@ h1,h2{font-family:'DM Serif Display',serif}
 </head>
 <body>
 
+<!-- ══ GATE — camada extra antes do login ══════════════════ -->
+<div id="screen-gate" class="screen active" style="align-items:center;justify-content:center;padding:2rem;background:var(--bg)">
+  <div style="width:100%;max-width:340px;text-align:center">
+    <div style="margin-bottom:6px;display:inline-flex;align-items:center;gap:0">
+      <span style="font-family:'DM Serif Display',serif;font-size:46px;letter-spacing:-2px;color:#f0f2f8;line-height:1">BR</span><span style="font-family:'DM Serif Display',serif;font-size:46px;letter-spacing:-2px;color:#4f8ef7;line-height:1">U</span><span style="font-family:'DM Serif Display',serif;font-size:46px;letter-spacing:-2px;color:#f0f2f8;line-height:1">DE</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:.3rem">
+      <div style="height:1px;width:28px;background:linear-gradient(to right,transparent,#4f8ef7)"></div>
+      <span style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:#4f8ef7;font-weight:600">finanças</span>
+      <div style="height:1px;width:28px;background:linear-gradient(to left,transparent,#4f8ef7)"></div>
+    </div>
+    <div style="font-size:12px;color:#4a5068;margin-bottom:2.5rem;letter-spacing:.08em;text-transform:uppercase">Acesso restrito</div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7a82a0;margin-bottom:6px;text-align:left">Código de acesso</label>
+      <input type="password" id="gate-password" placeholder="••••••••"
+        style="width:100%;background:#1e2333;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:12px 14px;color:#f0f2f8;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"
+        autocomplete="off">
+    </div>
+    <div id="gate-error" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#ef4444;display:none;text-align:left;margin-bottom:12px">Código incorreto.</div>
+    <button onclick="checkGate()" style="width:100%;background:#4f8ef7;color:#fff;border:none;border-radius:8px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer">Continuar</button>
+    <div style="font-size:11px;color:#4a5068;margin-top:1.5rem">Família Oliveira · Sistema privado</div>
+  </div>
+</div>
+
 <!-- ══ LOGIN ══════════════════════════════════════════════ -->
-<div id="screen-login" class="screen active">
+<div id="screen-login" class="screen">
   <div class="login-box">
-    <div class="login-logo">F<span>.</span>O</div>
+    <div class="login-logo" style="font-size:46px;letter-spacing:-2px;margin-bottom:2px"><span style="color:#f0f2f8">BR</span><span style="color:#4f8ef7">U</span><span style="color:#f0f2f8">DE</span></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:.5rem">
+      <div style="height:1px;width:24px;background:linear-gradient(to right,transparent,#4f8ef7)"></div>
+      <span style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:#4f8ef7;font-weight:600">finanças</span>
+      <div style="height:1px;width:24px;background:linear-gradient(to left,transparent,#4f8ef7)"></div>
+    </div>
     <div class="login-sub">Família Oliveira · Gestão Financeira</div>
     <div class="login-form">
       <div class="input-group">
@@ -261,7 +290,7 @@ h1,h2{font-family:'DM Serif Display',serif}
     <span style="margin-left:12px;cursor:pointer;color:var(--muted)" onclick="doLogout()">Sair</span>
   </div>
   <div class="topbar">
-    <div class="topbar-logo">F<span style="color:var(--accent)">.</span>O</div>
+    <div class="topbar-logo" style="font-size:20px;letter-spacing:-1px"><span style="color:var(--text)">BR</span><span style="color:var(--accent)">U</span><span style="color:var(--text)">DE</span></div>
     <div class="topbar-month" id="topbar-month-btn" onclick="showModal('modal-months')">Abr/2026 ▾</div>
     <div class="topbar-user" id="topbar-user">A</div>
   </div>
@@ -269,6 +298,7 @@ h1,h2{font-family:'DM Serif Display',serif}
   <div class="content">
     <div class="tabs">
       <div class="tab active" onclick="switchTab('dashboard',this)">Dashboard</div>
+      <div class="tab" onclick="switchTab('metas',this)">Situação</div>
       <div class="tab" onclick="switchTab('fluxo',this)">Fluxo</div>
       <div class="tab" onclick="switchTab('investimentos',this)">Investimentos</div>
       <div class="tab" onclick="switchTab('dividas',this)">Dívidas</div>
@@ -460,6 +490,22 @@ h1,h2{font-family:'DM Serif Display',serif}
         Faça upload dos arquivos mensais. O sistema extrai os dados automaticamente e atualiza o dashboard. Arquivos aceitos: PDF (faturas Bradesco, XP, extrato Nubank) · HTML (relatório exportado) · Excel/CSV.
       </div>
 
+      <div class="sec-title">Lançamento manual rápido</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+        <button onclick="showModal('modal-add-gasto')" style="background:var(--red-dim);border:1px solid rgba(239,68,68,.3);border-radius:var(--r);padding:16px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif">
+          <div style="font-size:18px;margin-bottom:6px">−</div>
+          <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:3px">Novo gasto</div>
+          <div style="font-size:11px;color:#f87171">Lançar despesa manualmente</div>
+        </button>
+        <button onclick="showModal('modal-add-entrada')" style="background:var(--green-dim);border:1px solid rgba(34,197,94,.3);border-radius:var(--r);padding:16px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif">
+          <div style="font-size:18px;margin-bottom:6px">+</div>
+          <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:3px">Nova entrada</div>
+          <div style="font-size:11px;color:#86efac">Lançar receita manualmente</div>
+        </button>
+      </div>
+
+      <div id="lancamentos-lista" style="margin-bottom:20px"></div>
+
       <div class="sec-title">Mês de referência</div>
       <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
         <select id="upload-month" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
@@ -494,6 +540,146 @@ h1,h2{font-family:'DM Serif Display',serif}
           <div class="fixed-item"><div class="fixed-dot" style="background:#a78bfa"></div><div class="fixed-name">Comissão Bruna (estimativa)</div><div style="margin-left:auto"><input type="text" value="R$ 5.000" style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;color:var(--purple);font-family:'DM Sans',sans-serif;font-size:13px;width:100px;outline:none;text-align:right"></div></div>
         </div>
         <button class="btn-primary" style="margin-top:16px" onclick="saveMonthData()">Salvar dados do mês</button>
+      </div>
+    </div>
+
+    <!-- SITUAÇÃO & METAS -->
+    <div id="tab-metas" class="tab-content" style="display:none">
+
+      <div style="background:var(--surface2);border-radius:var(--r);padding:18px;margin-bottom:14px;border-left:3px solid var(--accent)">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px">Situação atual — Abril/2026</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div><div style="font-size:11px;color:var(--muted)">Patrimônio líquido</div><div style="font-size:20px;font-weight:500;color:var(--green)">R$ 202.900</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">Investido</div><div style="font-size:20px;font-weight:500;color:var(--accent)">R$ 70.330</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">Gasto real / mês</div><div style="font-size:20px;font-weight:500;color:var(--red)">R$ 17.308</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">Renda fixa mensal</div><div style="font-size:20px;font-weight:500;color:var(--text)">R$ 15.000</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7;padding-top:10px;border-top:1px solid var(--border)">
+          O gasto mensal supera o salário fixo em <span style="color:var(--red);font-weight:500">R$ 2.308</span>. A comissão da Bruna está cobrindo o dia a dia em vez de ir para investimentos.
+        </div>
+      </div>
+
+      <div class="sec-title">Nota do mês</div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--red-dim);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--red)">C</span>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:500;margin-bottom:4px">Gastos acima da capacidade</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.6">Salário não cobre as despesas. Comissão sendo usada para fechar o mês em vez de construir patrimônio.</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div style="background:var(--red-dim);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:10px;color:var(--red);margin-bottom:4px;font-weight:600;letter-spacing:.06em">CRÍTICO</div>
+            <div style="font-size:11px;color:#fca5a5">Compras online<br>R$ 2.726 (meta R$ 700)</div>
+          </div>
+          <div style="background:var(--red-dim);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:10px;color:var(--red);margin-bottom:4px;font-weight:600;letter-spacing:.06em">CRÍTICO</div>
+            <div style="font-size:11px;color:#fca5a5">Alimentação fora<br>R$ 1.881 (meta R$ 800)</div>
+          </div>
+          <div style="background:var(--green-dim);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:10px;color:var(--green);margin-bottom:4px;font-weight:600;letter-spacing:.06em">OK</div>
+            <div style="font-size:11px;color:#86efac">Reserva emergência<br>128% da meta</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-title">Gastos vs metas — Abril/2026</div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--muted)">Compras online</span><span><span style="color:var(--red)">R$ 2.726</span> <span style="color:var(--muted2)">/ meta R$ 700</span></span></div>
+          <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="width:100%;height:100%;background:var(--red);border-radius:3px"></div></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--muted)">Alimentação fora</span><span><span style="color:var(--red)">R$ 1.881</span> <span style="color:var(--muted2)">/ meta R$ 800</span></span></div>
+          <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="width:100%;height:100%;background:var(--red);border-radius:3px"></div></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--muted)">Bebidas</span><span><span style="color:var(--red)">R$ 390</span> <span style="color:var(--muted2)">/ meta R$ 150</span></span></div>
+          <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="width:100%;height:100%;background:var(--red);border-radius:3px"></div></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--muted)">Combustível</span><span><span style="color:var(--amber)">R$ 718</span> <span style="color:var(--muted2)">/ meta R$ 600</span></span></div>
+          <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="width:90%;height:100%;background:var(--amber);border-radius:3px"></div></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--muted)">Assinaturas</span><span><span style="color:var(--amber)">R$ 388</span> <span style="color:var(--muted2)">/ meta R$ 250</span></span></div>
+          <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="width:80%;height:100%;background:var(--amber);border-radius:3px"></div></div>
+        </div>
+        <div style="margin-bottom:4px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--muted)">Supermercado</span><span><span style="color:var(--green)">R$ 470</span> <span style="color:var(--muted2)">/ meta R$ 500</span></span></div>
+          <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="width:94%;height:100%;background:var(--green);border-radius:3px"></div></div>
+        </div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:13px;font-weight:500">
+          <span style="color:var(--muted)">Excesso total sobre metas</span>
+          <span style="color:var(--red)">+ R$ 4.206</span>
+        </div>
+      </div>
+
+      <div class="sec-title">Metas — Maio/2026</div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">Se atingir todas as metas abaixo, o salário fecha sem precisar da comissão da Bruna.</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">Compras online</span><div><span style="color:var(--red);font-size:11px;text-decoration:line-through;margin-right:6px">R$ 2.726</span><span style="color:var(--green);font-weight:500">→ R$ 700</span></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">Alimentação fora</span><div><span style="color:var(--red);font-size:11px;text-decoration:line-through;margin-right:6px">R$ 1.881</span><span style="color:var(--green);font-weight:500">→ R$ 800</span></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">Bebidas</span><div><span style="color:var(--red);font-size:11px;text-decoration:line-through;margin-right:6px">R$ 390</span><span style="color:var(--green);font-weight:500">→ R$ 150</span></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">Combustível</span><div><span style="color:var(--amber);font-size:11px;margin-right:6px">R$ 718</span><span style="color:var(--green);font-weight:500">→ R$ 600</span></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">Assinaturas</span><div><span style="color:var(--amber);font-size:11px;margin-right:6px">R$ 388</span><span style="color:var(--green);font-weight:500">→ R$ 250</span></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">Serviços pessoais</span><div><span style="color:var(--amber);font-size:11px;margin-right:6px">R$ 476</span><span style="color:var(--green);font-weight:500">→ R$ 300</span></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13px"><span style="color:var(--muted)">Supermercado</span><div><span style="color:var(--green);font-weight:500">R$ 500 ✓</span></div></div>
+        <div style="margin-top:12px;padding:12px;background:var(--green-dim);border-radius:8px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--muted)">Total variável meta</span><span style="color:var(--green);font-weight:500">R$ 3.540</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--muted)">Total fixo</span><span style="color:var(--red)">R$ 8.564</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--muted)">Parcelas cartão mai/26</span><span style="color:var(--red)">R$ 2.856</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;padding-top:8px;border-top:1px solid rgba(34,197,94,.3)"><span style="color:var(--green)">Sobra para investir</span><span style="color:var(--green)">R$ 40</span></div>
+          <div style="font-size:11px;color:var(--green);margin-top:6px;opacity:.8">+ Comissão Bruna (~R$ 5.000) → 100% para investimentos</div>
+        </div>
+      </div>
+
+      <div class="sec-title">Plano de ação — Maio/2026</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div class="card">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Semanas 1–2</div>
+          <div style="font-size:13px;font-weight:500;color:var(--red);margin-bottom:6px">Corte imediato</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7">Zero compras em ML, Shopee e Amazon nas 2 primeiras semanas. Máximo 3 refeições fora por semana.</div>
+        </div>
+        <div class="card">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Semanas 3–4</div>
+          <div style="font-size:13px;font-weight:500;color:var(--amber);margin-bottom:6px">Consolidar</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7">Revisar fatura parcial dos cartões. Realocar CDB XP (R$ 3.350) que vence em jun/26.</div>
+        </div>
+        <div class="card">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Investimentos</div>
+          <div style="font-size:13px;font-weight:500;color:var(--accent);margin-bottom:6px">Meta de aportes</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7">R$ 1.000 do salário → renda fixa. Comissão Bruna → 50% FII + 50% RF. Meta total: R$ 6.000 investidos.</div>
+        </div>
+        <div class="card">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Atenção</div>
+          <div style="font-size:13px;font-weight:500;color:var(--amber);margin-bottom:6px">Maio já comprometido</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7">R$ 2.856 em parcelas já vêm na fatura de maio. Controle o gasto novo abaixo de R$ 3.540.</div>
+        </div>
+      </div>
+
+      <div class="sec-title">Se cumprir as metas — impacto acumulado</div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div style="text-align:center;padding:14px;background:var(--green-dim);border-radius:8px">
+            <div style="font-size:11px;color:var(--green);margin-bottom:6px;font-weight:600;letter-spacing:.06em">EM 6 MESES</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--green)">+R$ 36k</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">investidos acumulados</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--blue-dim);border-radius:8px">
+            <div style="font-size:11px;color:var(--accent);margin-bottom:6px;font-weight:600;letter-spacing:.06em">DEZ/2026</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent)">+R$ 2.856</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">parcelas cartão zeram</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--purple-dim);border-radius:8px">
+            <div style="font-size:11px;color:var(--purple);margin-bottom:6px;font-weight:600;letter-spacing:.06em">OUT/2028</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--purple)">+R$ 2.447</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">carro quitado</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -537,12 +723,20 @@ h1,h2{font-family:'DM Serif Display',serif}
       <input type="password" id="new-pass2" placeholder="Repita a senha">
     </div>
     <div class="form-group">
-      <label>Google Drive — backup</label>
-      <button class="btn-primary" onclick="exportBackup()" style="font-size:12px;padding:10px">Exportar backup criptografado (.fo-backup)</button>
+      <label>Google Drive — backup automático</label>
+      <div id="gdrive-status" style="font-size:12px;color:var(--muted);margin-bottom:8px">Não conectado</div>
+      <button id="gdrive-btn" class="btn-primary" onclick="gdriveConnect()" style="font-size:12px;padding:10px;margin-bottom:8px">Conectar Google Drive</button>
+      <button class="btn-secondary" onclick="exportBackup()" style="font-size:12px;padding:10px;width:100%">Exportar backup manual (.fo-backup)</button>
     </div>
     <div class="form-group">
       <label>Restaurar backup</label>
       <input type="file" id="restore-file" accept=".fo-backup" onchange="restoreBackup(event)" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px;color:var(--text);font-size:12px;width:100%">
+    </div>
+    <div class="form-group">
+      <label>Código de acesso (gate)</label>
+      <input type="password" id="new-gate" placeholder="Novo código de acesso" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%">
+      <div style="font-size:11px;color:var(--muted2);margin-top:4px">Código pedido antes da tela de login (camada extra de segurança)</div>
+      <button onclick="saveGate()" style="margin-top:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;width:100%">Salvar novo código</button>
     </div>
     <div class="btn-row">
       <button class="btn-secondary" onclick="hideModal('modal-settings')">Fechar</button>
@@ -565,7 +759,100 @@ h1,h2{font-family:'DM Serif Display',serif}
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-edit-fixed">
+<!-- ══ MODAL NOVO GASTO ══════════════════════════════════ -->
+<div class="modal-overlay" id="modal-add-gasto">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('modal-add-gasto')">×</button>
+    <h3 style="color:var(--red)">− Novo gasto</h3>
+    <div class="form-group">
+      <label>Descrição</label>
+      <input type="text" id="gasto-desc" placeholder="Ex: Mercado, Restaurante, Amazon...">
+    </div>
+    <div class="form-group">
+      <label>Valor (R$)</label>
+      <input type="number" id="gasto-val" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="form-group">
+      <label>Categoria</label>
+      <select id="gasto-cat" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+        <option>Compras Online</option>
+        <option>Alimentação fora</option>
+        <option>Supermercado</option>
+        <option>Combustível</option>
+        <option>Transporte</option>
+        <option>Bebidas</option>
+        <option>Assinaturas</option>
+        <option>Serviços Pessoais</option>
+        <option>Saúde/Farmácia</option>
+        <option>Lazer</option>
+        <option>Roupas</option>
+        <option>Casa/Decoração</option>
+        <option>Educação</option>
+        <option>Outros</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Titular</label>
+      <select id="gasto-titular" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+        <option>André</option>
+        <option>Bruna</option>
+        <option>Família</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Data</label>
+      <input type="date" id="gasto-data" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%">
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="hideModal('modal-add-gasto')">Cancelar</button>
+      <button class="btn-primary" style="flex:1;background:var(--red);border-color:var(--red)" onclick="salvarGasto()">Lançar gasto</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL NOVA ENTRADA ════════════════════════════════ -->
+<div class="modal-overlay" id="modal-add-entrada">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('modal-add-entrada')">×</button>
+    <h3 style="color:var(--green)">+ Nova entrada</h3>
+    <div class="form-group">
+      <label>Descrição</label>
+      <input type="text" id="entrada-desc" placeholder="Ex: Salário André, Comissão Bruna, Rendimento XP...">
+    </div>
+    <div class="form-group">
+      <label>Valor (R$)</label>
+      <input type="number" id="entrada-val" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="form-group">
+      <label>Tipo</label>
+      <select id="entrada-tipo" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+        <option>Salário</option>
+        <option>Comissão</option>
+        <option>Rendimento investimento</option>
+        <option>Provento FII</option>
+        <option>Freelance / Extra</option>
+        <option>Restituição / Reembolso</option>
+        <option>Outros</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Titular</label>
+      <select id="entrada-titular" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+        <option>André</option>
+        <option>Bruna</option>
+        <option>Família</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Data</label>
+      <input type="date" id="entrada-data" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%">
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="hideModal('modal-add-entrada')">Cancelar</button>
+      <button class="btn-primary" style="flex:1" onclick="salvarEntrada()">Lançar entrada</button>
+    </div>
+  </div>
+</div>
   <div class="modal">
     <button class="modal-close" onclick="hideModal('modal-edit-fixed')">×</button>
     <h3>Editar custo fixo</h3>
@@ -718,10 +1005,10 @@ function switchTab(name, el) {
   document.getElementById('tab-'+name).style.display = 'block';
   el.classList.add('active');
   if (name === 'evolucao') setTimeout(renderCharts, 100);
+  if (name === 'upload') setTimeout(renderLancamentos, 50);
 }
 
 // ══ MODALS ════════════════════════════════════════════════════
-function showModal(id) { document.getElementById(id).classList.add('open'); }
 function hideModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
 
@@ -1006,10 +1293,284 @@ function renderCharts() {
   makeChart('chart-inv', cfg(months, [ds(inv,'#a78bfa','Investimentos')]));
 }
 
+// ══ GATE ══════════════════════════════════════════════════════
+const GATE_KEY = 'fo_gate';
+const DEFAULT_GATE = 'Familia@2026';
+
+function getGateHash() {
+  return localStorage.getItem(GATE_KEY) || btoa(DEFAULT_GATE);
+}
+
+async function checkGate() {
+  const pw = document.getElementById('gate-password').value;
+  if (!pw) return;
+  const stored = getGateHash();
+  const entered = btoa(pw);
+  if (entered !== stored) {
+    document.getElementById('gate-error').style.display = 'block';
+    document.getElementById('gate-password').value = '';
+    return;
+  }
+  document.getElementById('gate-error').style.display = 'none';
+  showScreen('screen-login');
+  document.getElementById('login-password').focus();
+}
+
+function saveGate() {
+  const v = document.getElementById('new-gate').value;
+  if (!v || v.length < 4) { alert('Código muito curto. Use pelo menos 4 caracteres.'); return; }
+  localStorage.setItem(GATE_KEY, btoa(v));
+  document.getElementById('new-gate').value = '';
+  alert('Código de acesso atualizado!');
+}
+
+document.getElementById('gate-password').addEventListener('keydown', e => { if(e.key==='Enter') checkGate(); });
+
+// ══ GOOGLE DRIVE ══════════════════════════════════════════════
+// Uses Google Identity Services + Drive REST API
+// Client ID: filled by user after setup
+let GDRIVE_CLIENT_ID = localStorage.getItem('fo_gdrive_client_id') || '';
+let GDRIVE_TOKEN = null;
+let GDRIVE_FILE_ID = localStorage.getItem('fo_gdrive_file_id') || null;
+const GDRIVE_FILENAME = 'familia-oliveira-backup.fo-backup';
+const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+function updateGdriveStatus() {
+  const el = document.getElementById('gdrive-status');
+  const btn = document.getElementById('gdrive-btn');
+  if (!el) return;
+  if (!GDRIVE_CLIENT_ID) {
+    el.textContent = 'Client ID não configurado';
+    el.style.color = 'var(--amber)';
+    btn.textContent = 'Configurar Google Drive';
+  } else if (GDRIVE_TOKEN) {
+    el.textContent = 'Conectado · backup automático ativo';
+    el.style.color = 'var(--green)';
+    btn.textContent = 'Reconectar';
+  } else {
+    el.textContent = 'Client ID configurado · clique para conectar';
+    el.style.color = 'var(--accent)';
+    btn.textContent = 'Conectar Google Drive';
+  }
+}
+
+function gdriveConnect() {
+  if (!GDRIVE_CLIENT_ID) {
+    const id = prompt('Cole aqui o Client ID do Google Cloud Console:\n(Veja o README para instruções de como obter)');
+    if (!id || !id.includes('.apps.googleusercontent.com')) {
+      alert('Client ID inválido. Deve terminar em .apps.googleusercontent.com');
+      return;
+    }
+    GDRIVE_CLIENT_ID = id.trim();
+    localStorage.setItem('fo_gdrive_client_id', GDRIVE_CLIENT_ID);
+  }
+  gdriveAuth();
+}
+
+function gdriveAuth() {
+  if (!GDRIVE_CLIENT_ID) return;
+  const params = new URLSearchParams({
+    client_id: GDRIVE_CLIENT_ID,
+    redirect_uri: window.location.origin + window.location.pathname,
+    response_type: 'token',
+    scope: GDRIVE_SCOPES,
+    prompt: 'select_account'
+  });
+  window.open('https://accounts.google.com/o/oauth2/v2/auth?' + params, '_blank', 'width=500,height=600');
+  // Listen for token via postMessage from popup (simplified flow)
+  window.addEventListener('message', async (e) => {
+    if (e.data && e.data.type === 'gdrive_token') {
+      GDRIVE_TOKEN = e.data.token;
+      updateGdriveStatus();
+      await gdriveAutoBackup();
+    }
+  }, {once: true});
+}
+
+// Handle OAuth redirect (token in hash)
+(function handleOAuthRedirect() {
+  const hash = window.location.hash;
+  if (hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.substring(1));
+    const token = params.get('access_token');
+    if (token) {
+      GDRIVE_TOKEN = token;
+      window.history.replaceState({}, '', window.location.pathname);
+      // If opened as popup, send token to opener
+      if (window.opener) {
+        window.opener.postMessage({type:'gdrive_token', token}, '*');
+        window.close();
+      } else {
+        updateGdriveStatus();
+      }
+    }
+  }
+})();
+
+async function gdriveAutoBackup() {
+  if (!GDRIVE_TOKEN || !APP.password) return;
+  try {
+    setSyncStatus('syncing');
+    const enc = await CRYPTO.encrypt(APP, APP.password);
+    const blob = new Blob([enc], {type:'application/octet-stream'});
+
+    if (GDRIVE_FILE_ID) {
+      // Update existing file
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${GDRIVE_FILE_ID}?uploadType=media`, {
+        method: 'PATCH',
+        headers: {'Authorization': 'Bearer ' + GDRIVE_TOKEN, 'Content-Type': 'application/octet-stream'},
+        body: blob
+      });
+    } else {
+      // Create new file
+      const meta = {name: GDRIVE_FILENAME, mimeType: 'application/octet-stream'};
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(meta)], {type:'application/json'}));
+      form.append('file', blob);
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: {'Authorization': 'Bearer ' + GDRIVE_TOKEN},
+        body: form
+      });
+      const data = await res.json();
+      GDRIVE_FILE_ID = data.id;
+      localStorage.setItem('fo_gdrive_file_id', GDRIVE_FILE_ID);
+    }
+    setSyncStatus('ok');
+    const el = document.getElementById('sync-status');
+    if (el) el.textContent = 'Salvo · Google Drive · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    setSyncStatus('error');
+    console.error('Google Drive backup error:', e);
+  }
+}
+
+// Hook auto-backup into saveData
+const _origSaveData = saveData;
+async function saveData() {
+  await _origSaveData();
+  if (GDRIVE_TOKEN) await gdriveAutoBackup();
+}
+
+// ══ LANÇAMENTOS MANUAIS ═══════════════════════════════════════
+function initDatas() {
+  const hoje = new Date().toISOString().split('T')[0];
+  const gi = document.getElementById('gasto-data');
+  const ei = document.getElementById('entrada-data');
+  if (gi && !gi.value) gi.value = hoje;
+  if (ei && !ei.value) ei.value = hoje;
+}
+
+function showModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'modal-add-gasto' || id === 'modal-add-entrada') initDatas();
+}
+
+async function salvarGasto() {
+  const desc = document.getElementById('gasto-desc').value.trim();
+  const val = parseFloat(document.getElementById('gasto-val').value);
+  const cat = document.getElementById('gasto-cat').value;
+  const titular = document.getElementById('gasto-titular').value;
+  const data = document.getElementById('gasto-data').value;
+
+  if (!desc || !val || val <= 0) { alert('Preencha descrição e valor.'); return; }
+
+  const m = APP.currentMonth;
+  if (!APP.months[m]) APP.months[m] = {};
+  if (!APP.months[m].lancamentos) APP.months[m].lancamentos = [];
+
+  APP.months[m].lancamentos.push({tipo:'gasto', desc, val, cat, titular, data, id: Date.now()});
+
+  // Update category total
+  if (!APP.months[m].categorias) APP.months[m].categorias = {};
+  APP.months[m].categorias[cat] = (APP.months[m].categorias[cat] || 0) + val;
+  APP.months[m].gastos_cartao = (APP.months[m].gastos_cartao || 0) + val;
+
+  await saveData();
+  hideModal('modal-add-gasto');
+  document.getElementById('gasto-desc').value = '';
+  document.getElementById('gasto-val').value = '';
+  renderLancamentos();
+}
+
+async function salvarEntrada() {
+  const desc = document.getElementById('entrada-desc').value.trim();
+  const val = parseFloat(document.getElementById('entrada-val').value);
+  const tipo = document.getElementById('entrada-tipo').value;
+  const titular = document.getElementById('entrada-titular').value;
+  const data = document.getElementById('entrada-data').value;
+
+  if (!desc || !val || val <= 0) { alert('Preencha descrição e valor.'); return; }
+
+  const m = APP.currentMonth;
+  if (!APP.months[m]) APP.months[m] = {};
+  if (!APP.months[m].lancamentos) APP.months[m].lancamentos = [];
+
+  APP.months[m].lancamentos.push({tipo:'entrada', desc, val, cat: tipo, titular, data, id: Date.now()});
+
+  // Update income if salary/commission
+  if (tipo === 'Salário') APP.months[m].renda_fixa = (APP.months[m].renda_fixa || 0) + val;
+  if (tipo === 'Comissão') APP.months[m].comissao = val;
+
+  await saveData();
+  hideModal('modal-add-entrada');
+  document.getElementById('entrada-desc').value = '';
+  document.getElementById('entrada-val').value = '';
+  renderLancamentos();
+}
+
+async function removerLancamento(id) {
+  const m = APP.currentMonth;
+  if (!APP.months[m] || !APP.months[m].lancamentos) return;
+  const item = APP.months[m].lancamentos.find(l => l.id === id);
+  if (!item) return;
+
+  // Reverse the impact
+  if (item.tipo === 'gasto') {
+    APP.months[m].gastos_cartao = Math.max(0, (APP.months[m].gastos_cartao || 0) - item.val);
+    if (APP.months[m].categorias && APP.months[m].categorias[item.cat]) {
+      APP.months[m].categorias[item.cat] = Math.max(0, APP.months[m].categorias[item.cat] - item.val);
+    }
+  }
+  APP.months[m].lancamentos = APP.months[m].lancamentos.filter(l => l.id !== id);
+  await saveData();
+  renderLancamentos();
+}
+
+function renderLancamentos() {
+  const el = document.getElementById('lancamentos-lista');
+  if (!el) return;
+  const m = APP.currentMonth;
+  const items = (APP.months[m] && APP.months[m].lancamentos) || [];
+  if (!items.length) { el.innerHTML = ''; return; }
+
+  const sorted = [...items].sort((a,b) => new Date(b.data) - new Date(a.data));
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      Lançamentos manuais (${items.length})
+      <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+    </div>
+    ${sorted.map(l => `
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:6px;font-size:12px">
+        <div style="width:6px;height:6px;border-radius:50%;background:${l.tipo==='gasto'?'#ef4444':'#22c55e'};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.desc}</div>
+          <div style="color:var(--muted);font-size:11px">${l.cat} · ${l.titular} · ${l.data}</div>
+        </div>
+        <div style="font-weight:600;color:${l.tipo==='gasto'?'#ef4444':'#22c55e'};flex-shrink:0">${l.tipo==='gasto'?'−':'+'} ${fmt(l.val)}</div>
+        <span onclick="removerLancamento(${l.id})" style="color:var(--muted2);cursor:pointer;font-size:16px;flex-shrink:0" title="Remover">×</span>
+      </div>
+    `).join('')}
+  `;
+}
+
 // ══ UTILS ══════════════════════════════════════════════════════
 function fmt(v) {
   return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
 }
+
+// ══ INIT ═══════════════════════════════════════════════════════
+updateGdriveStatus();
 
 // ══ SERVICE WORKER (PWA) ═══════════════════════════════════════
 if ('serviceWorker' in navigator) {
