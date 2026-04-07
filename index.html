@@ -256,6 +256,9 @@ h1,h2{font-family:'DM Serif Display',serif}
     <div id="gate-error" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#ef4444;display:none;text-align:left;margin-bottom:12px">Código incorreto.</div>
     <button onclick="checkGate()" style="width:100%;background:#4f8ef7;color:#fff;border:none;border-radius:8px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer">Continuar</button>
     <div style="font-size:11px;color:#4a5068;margin-top:1.5rem">Família Oliveira · Sistema privado<br><span style="color:#4a5068">Código padrão: <strong style="color:#7a82a0">Familia2026</strong></span></div>
+    <div style="margin-top:12px">
+      <button onclick="resetGate()" style="background:none;border:none;font-size:11px;color:#4a5068;cursor:pointer;text-decoration:underline">Primeiro acesso neste dispositivo? Clique aqui</button>
+    </div>
   </div>
 </div>
 
@@ -1425,18 +1428,24 @@ function simpleHash(str) {
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash;
   }
-  return 'h_' + hash.toString(36);
+  return 'h_' + Math.abs(hash).toString(36);
 }
 
 function getGateHash() {
   const stored = localStorage.getItem(GATE_KEY);
-  // Se não tem nada ou é formato antigo (btoa = não começa com 'h_'), reseta para padrão
   if (!stored || !stored.startsWith('h_')) {
     const h = simpleHash(DEFAULT_GATE);
     localStorage.setItem(GATE_KEY, h);
     return h;
   }
   return stored;
+}
+
+function resetGate() {
+  localStorage.removeItem(GATE_KEY);
+  document.getElementById('gate-password').value = '';
+  document.getElementById('gate-error').style.display = 'none';
+  alert('Código resetado. Use: Familia2026');
 }
 
 async function checkGate() {
@@ -1459,7 +1468,7 @@ function saveGate() {
   if (!v || v.length < 4) { alert('Código muito curto. Use pelo menos 4 caracteres.'); return; }
   localStorage.setItem(GATE_KEY, simpleHash(v));
   document.getElementById('new-gate').value = '';
-  alert('Código de acesso atualizado! Use o novo código no próximo acesso.'); 
+  alert('Código de acesso atualizado!');
 }
 
 document.getElementById('gate-password').addEventListener('keydown', e => { if(e.key==='Enter') checkGate(); });
