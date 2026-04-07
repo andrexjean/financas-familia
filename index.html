@@ -1151,6 +1151,13 @@ function doLogout() {
     showScreen('screen-login');
   });
 }
+  firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    showScreen('screen-app');
+  } else {
+    showScreen('screen-login');
+  }
+});
 
 // ══ NAVIGATION ════════════════════════════════════════════════
 function showScreen(id) {
