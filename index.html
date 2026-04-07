@@ -1221,12 +1221,25 @@ async function doLogin() {
   // Autentica no Firebase usando email derivado do hash da senha
   // Isso não expõe a senha — o email é gerado a partir do hash
   if (fbAuth) {
-    const enc = new TextEncoder();
-    const hashBuf = await crypto.subtle.digest('SHA-256', enc.encode(pw));
-    const hashHex = Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,20);
-    const fbEmail = `user_${hashHex}@brude.app`;
-    await fbSignIn(fbEmail, pw + '_fb');
+    async function doLogin() {
+  const pw = document.getElementById('login-password').value;
+
+  let email = "";
+
+  if (pw === "Andre123") {
+    email = "andrexjean@gmail.com";
+  } else {
+    document.getElementById("login-error").style.display = "block";
+    return;
   }
+
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, pw);
+    showScreen('screen-app');
+  } catch (e) {
+    alert(e.message);
+  }
+}
 
   const ok = await loadData(pw);
   if (btn) { btn.textContent = 'Entrar'; btn.disabled = false; }
