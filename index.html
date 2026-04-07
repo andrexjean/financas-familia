@@ -1420,53 +1420,64 @@ function renderCharts() {
 // ══ GATE ══════════════════════════════════════════════════════
 const GATE_KEY = 'fo_gate';
 const DEFAULT_GATE = 'Familia2026';
+const GATE_SALT = new Uint8Array([66,82,85,68,69,95,71,65,84,69,95,50,48,50,54,33]);
 
-function simpleHash(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return 'h_' + Math.abs(hash).toString(36);
+async function hashGate(password) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    {name:'PBKDF2', salt:GATE_SALT, iterations:100000, hash:'SHA-256'},
+    keyMaterial, 256
+  );
+  return Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-function getGateHash() {
+async function getGateHash() {
   const stored = localStorage.getItem(GATE_KEY);
-  if (!stored || !stored.startsWith('h_')) {
-    const h = simpleHash(DEFAULT_GATE);
+  if (!stored || stored.length < 60) {
+    const h = await hashGate(DEFAULT_GATE);
     localStorage.setItem(GATE_KEY, h);
     return h;
   }
   return stored;
 }
 
-function resetGate() {
+async function resetGate() {
   localStorage.removeItem(GATE_KEY);
   document.getElementById('gate-password').value = '';
   document.getElementById('gate-error').style.display = 'none';
+  await getGateHash();
   alert('Código resetado. Use: Familia2026');
 }
 
 async function checkGate() {
   const pw = document.getElementById('gate-password').value.trim();
   if (!pw) return;
-  const stored = getGateHash();
-  const entered = simpleHash(pw);
-  if (entered !== stored) {
-    document.getElementById('gate-error').style.display = 'block';
-    document.getElementById('gate-password').value = '';
-    return;
+  const btn = document.querySelector('#screen-gate button');
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
+  try {
+    const stored = await getGateHash();
+    const entered = await hashGate(pw);
+    if (entered !== stored) {
+      document.getElementById('gate-error').style.display = 'block';
+      document.getElementById('gate-password').value = '';
+    } else {
+      document.getElementById('gate-error').style.display = 'none';
+      showScreen('screen-login');
+      document.getElementById('login-password').focus();
+    }
+  } finally {
+    if (btn) { btn.textContent = 'Continuar'; btn.disabled = false; }
   }
-  document.getElementById('gate-error').style.display = 'none';
-  showScreen('screen-login');
-  document.getElementById('login-password').focus();
 }
 
-function saveGate() {
+async function saveGate() {
   const v = document.getElementById('new-gate').value.trim();
   if (!v || v.length < 4) { alert('Código muito curto. Use pelo menos 4 caracteres.'); return; }
-  localStorage.setItem(GATE_KEY, simpleHash(v));
+  const h = await hashGate(v);
+  localStorage.setItem(GATE_KEY, h);
   document.getElementById('new-gate').value = '';
   alert('Código de acesso atualizado!');
 }
@@ -1474,9 +1485,7 @@ function saveGate() {
 document.getElementById('gate-password').addEventListener('keydown', e => { if(e.key==='Enter') checkGate(); });
 
 // ══ GOOGLE DRIVE ══════════════════════════════════════════════
-// Uses Google Identity Services + Drive REST API
-// Client ID: filled by user after setup
-let GDRIVE_CLIENT_ID = localStorage.getItem('fo_gdrive_client_id') || '';
+let GDRIVE_CLIENT_ID = '401474452801-84ijevj738v4bp92gqo0v97g7kiojk7e.apps.googleusercontent.com';
 let GDRIVE_TOKEN = null;
 let GDRIVE_FILE_ID = localStorage.getItem('fo_gdrive_file_id') || null;
 const GDRIVE_FILENAME = 'familia-oliveira-backup.fo-backup';
@@ -1486,31 +1495,18 @@ function updateGdriveStatus() {
   const el = document.getElementById('gdrive-status');
   const btn = document.getElementById('gdrive-btn');
   if (!el) return;
-  if (!GDRIVE_CLIENT_ID) {
-    el.textContent = 'Client ID não configurado';
-    el.style.color = 'var(--amber)';
-    btn.textContent = 'Configurar Google Drive';
-  } else if (GDRIVE_TOKEN) {
+  if (GDRIVE_TOKEN) {
     el.textContent = 'Conectado · backup automático ativo';
     el.style.color = 'var(--green)';
     btn.textContent = 'Reconectar';
   } else {
-    el.textContent = 'Client ID configurado · clique para conectar';
+    el.textContent = 'Clique para conectar com sua conta Google';
     el.style.color = 'var(--accent)';
     btn.textContent = 'Conectar Google Drive';
   }
 }
 
 function gdriveConnect() {
-  if (!GDRIVE_CLIENT_ID) {
-    const id = prompt('Cole aqui o Client ID do Google Cloud Console:\n(Veja o README para instruções de como obter)');
-    if (!id || !id.includes('.apps.googleusercontent.com')) {
-      alert('Client ID inválido. Deve terminar em .apps.googleusercontent.com');
-      return;
-    }
-    GDRIVE_CLIENT_ID = id.trim();
-    localStorage.setItem('fo_gdrive_client_id', GDRIVE_CLIENT_ID);
-  }
   gdriveAuth();
 }
 
