@@ -2,104 +2,72 @@
 
 Sistema de gestão financeira familiar — seguro, offline-first, sem custos.
 
-## Como publicar (passo a passo)
+---
 
-### 1. Criar conta no GitHub (gratuito)
-- Acesse https://github.com e crie uma conta
-- É gratuito e não precisa de cartão
+## Segurança — 3 camadas
 
-### 2. Criar repositório
-- Clique em "New repository"
-- Nome: `financas-familia` (ou qualquer nome)
-- Marque como **Private** (privado — só você vê)
-- Clique em "Create repository"
+1. **Gate** — código pedido antes de qualquer coisa (padrão: `Familia@2026`)
+2. **Login** — senha do sistema com criptografia AES-256 (padrão: `Oliveira2026`)
+3. **Dados** — armazenados criptografados no dispositivo, nunca em servidor
 
-### 3. Fazer upload dos arquivos
-- Na página do repositório, clique em "uploading an existing file"
-- Arraste todos os arquivos desta pasta:
-  - `index.html`
-  - `sw.js`
-  - `manifest.json`
-- Clique em "Commit changes"
-
-### 4. Ativar GitHub Pages
-- Vá em Settings → Pages
-- Source: "Deploy from a branch"
-- Branch: main → / (root)
-- Clique em Save
-- Em ~2 minutos o site estará em: `https://seu-usuario.github.io/financas-familia`
-
-### 5. Acessar no celular
-- Abra a URL no Chrome do celular
-- Toque no menu (3 pontos) → "Adicionar à tela inicial"
-- O app aparece como ícone nativo no celular
+**Troque ambos imediatamente após instalar** em Configurações.
 
 ---
 
-## Segurança
+## Como atualizar o sistema (substituir index.html no GitHub)
 
-### Como funciona
-- **Criptografia AES-256-GCM** com PBKDF2 (200.000 iterações)
-- Os dados ficam **apenas no seu dispositivo** (localStorage criptografado)
-- Nenhum dado vai para servidores — nem para o GitHub
-- O GitHub Pages serve apenas o código HTML (sem acesso aos dados)
+1. Acesse github.com → seu repositório `financas-familia`
+2. Clique no arquivo `index.html` → ícone de lápis (editar)
+3. Selecione todo o conteúdo (Ctrl+A) e delete
+4. Cole o novo conteúdo do arquivo atualizado
+5. Clique em "Commit changes" → pronto
 
-### Senha padrão
-A senha inicial é: **Oliveira2026**
-**Troque imediatamente** em Configurações → Trocar senha
-
-### Sincronização entre dispositivos
-Como os dados ficam locais, para sincronizar entre computador e celular:
-1. No dispositivo principal, vá em Configurações → Exportar backup
-2. Salve o arquivo `.fo-backup` no Google Drive
-3. No outro dispositivo, abra o arquivo do Drive e use Configurações → Restaurar backup
-4. Faça isso mensalmente após registrar os dados
-
-### Backup
-- Exporte o backup mensalmente após lançar os dados
-- O arquivo `.fo-backup` é criptografado — só abre com sua senha
-- Salve no Google Drive para não perder
+OU use o botão de upload: clique no ícone da lixeira para deletar o arquivo antigo, depois faça upload do novo.
 
 ---
 
-## Como usar mensalmente
+## Configurar Google Drive — backup automático
 
-1. **Acesse o sistema** e entre com sua senha
-2. Vá na aba **Importar**
-3. Selecione o mês de referência
-4. **Faça upload** dos arquivos:
-   - Fatura HTML do cartão (Nubank/XP)
-   - Relatório XP em PDF ou Excel
-   - Extrato Bradesco em PDF (imóvel/carro)
-5. Clique em **Processar arquivos**
-6. **Confirme os custos fixos** do mês (ajuste se algo mudou)
-7. Clique em **Salvar dados do mês**
-8. Veja o **Dashboard** atualizado
-9. Exporte o backup e salve no Google Drive
+### Passo 1 — Google Cloud Console
+1. Acesse: https://console.cloud.google.com (login com sua conta Google)
+2. Topo → "Selecionar projeto" → "Novo projeto"
+3. Nome: `FinancasFamilia` → Criar
+
+### Passo 2 — Ativar API do Drive
+1. Menu → "APIs e serviços" → "Biblioteca"
+2. Pesquise `Google Drive API` → Ativar
+
+### Passo 3 — Tela de consentimento OAuth
+1. Menu → "APIs e serviços" → "Tela de consentimento OAuth"
+2. Tipo: **Externo** → Criar
+3. Nome: `Financas Familia` · email: seu email → Salvar e continuar
+4. Na etapa "Usuários de teste" → Adicionar → coloque seu email E o da Bruna
+
+### Passo 4 — Criar credencial
+1. Menu → "APIs e serviços" → "Credenciais"
+2. "+ Criar credenciais" → "ID do cliente OAuth"
+3. Tipo: **Aplicativo da Web** · Nome: `Financas`
+4. Origens JavaScript autorizadas: `https://andrexjean.github.io`
+5. URIs de redirecionamento: `https://andrexjean.github.io/financas-familia/`
+6. Criar → **copie o Client ID** (termina em `.apps.googleusercontent.com`)
+
+### Passo 5 — Conectar no sistema
+1. Abra o sistema → ⚙ Configurações
+2. Clique "Conectar Google Drive" → cole o Client ID
+3. Autorize com sua conta Google
+4. Pronto — backup automático após cada salvamento!
 
 ---
 
-## Funcionalidades
+## Usar todo mês
 
-- Login com senha e criptografia AES-256
-- Dashboard com KPIs atualizados a cada mês
-- Importação de faturas HTML, PDF, Excel
-- Custos fixos editáveis mês a mês
-- Evolução patrimonial em gráficos
-- Análise de gastos vs metas por categoria
-- Alertas automáticos de desvios
-- Marcos financeiros (dívidas, quitações)
-- Backup criptografado exportável
-- PWA instalável no celular
-- Funciona offline após primeiro acesso
+1. Gate → Login
+2. Aba Importar → selecione o mês → upload dos arquivos → Processar → Salvar
+3. Backup vai automaticamente para o Google Drive
 
 ---
 
-## Dados pré-carregados (Abril/2026)
+## Instalar como app no celular
 
-- Patrimônio líquido: R$ 202.900
-- Investimentos: R$ 70.330 (XP + Nubank)
-- Gastos cartão: R$ 10.744
-- Imóvel: saldo R$ 239.290 · parcela R$ 2.358
-- Carro: saldo R$ 61.140 · parcela R$ 2.447
-- Renda fixa: R$ 15.000 | Comissão: ~R$ 5.000
+**Android:** Chrome → menu 3 pontinhos → "Adicionar à tela inicial"
+**iPhone:** Safari → botão compartilhar → "Adicionar à tela de início"
