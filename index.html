@@ -934,6 +934,7 @@ h1,h2{font-family:'DM Serif Display',serif}
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -1020,13 +1021,117 @@ const FB_CONFIG = {
 
 let fbApp = null;
 let fbDb = null;
+let fbAuth = null;
+let fbUser = null;
 let fbListener = null;
 
 function initFirebase() {
   try {
     fbApp = firebase.initializeApp(FB_CONFIG);
     fbDb = firebase.database();
+    fbAuth = firebase.auth();
+    // Escuta estado de autenticação
+    fbAuth.onAuthStateChanged((user) => {
+      fbUser = user;
+      const dot = document.getElementById('sync-dot');
+      const txt = document.getElementById('sync-status');
+      if (user && dot && txt) {
+        dot.className = 'sync-dot';
+        txt.textContent = 'Firebase autenticado · ' + (user.email || 'anônimo');
+      }
+    });
   } catch(e) { console.warn('Firebase init error:', e); }
+}
+
+async function fbSignIn(email, password) {
+  if (!fbAuth) return false;
+  try {
+    await fbAuth.signInWithEmailAndPassword(email, password);
+    return true;
+  } catch(e) {
+    // Se não existir, cria o usuário
+    if (e.code === 'auth/user-not-found') {
+      try {
+        await fbAuth.createUserWithEmailAndPassword(email, password);
+        return true;
+      } catch(e2) { return false; }
+    }
+    return false;
+  }
+}
+
+async function saveData() {
+  if (!APP.password) return;
+  try {
+    const enc = await CRYPTO.encrypt(APP, APP.password);
+    localStorage.setItem('fo_data', enc);
+    localStorage.setItem('fo_ts', Date.now().toString());
+    // Salva no Firebase com path do usuário autenticado
+    if (fbDb) {
+      const path = fbUser ? `familia/${fbUser.uid}/dados` : 'familia/shared/dados';
+      await fbDb.ref(path).set({ enc, ts: Date.now() });
+    }
+    setSyncStatus('ok');
+    if (GDRIVE_TOKEN) gdriveAutoBackup();
+  } catch(e) {
+    setSyncStatus('error');
+    console.error('saveData error:', e);
+  }
+}
+
+async function loadData(password) {
+  if (fbDb) {
+    try {
+      setSyncStatus('syncing');
+      const path = fbUser ? `familia/${fbUser.uid}/dados` : 'familia/shared/dados';
+      const snap = await fbDb.ref(path).get();
+      if (snap.exists()) {
+        const { enc } = snap.val();
+        const dec = await CRYPTO.decrypt(enc, password);
+        if (dec) {
+          APP = {...APP, ...dec, password};
+          localStorage.setItem('fo_data', enc);
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } catch(e) { console.warn('Firebase load error, fallback local:', e); }
+  }
+  const raw = localStorage.getItem('fo_data');
+  if (!raw) {
+    APP.password = password;
+    await saveData();
+    return true;
+  }
+  const dec = await CRYPTO.decrypt(raw, password);
+  if (!dec) return false;
+  APP = {...APP, ...dec, password};
+  return true;
+}
+
+function startFirebaseSync() {
+  if (!fbDb) return;
+  if (fbListener) fbListener();
+  const path = fbUser ? `familia/${fbUser.uid}/dados` : 'familia/shared/dados';
+  fbListener = fbDb.ref(path).on('value', async (snap) => {
+    if (!snap.exists() || !APP.password) return;
+    try {
+      const { enc, ts } = snap.val();
+      const localTs = parseInt(localStorage.getItem('fo_ts') || '0');
+      if (ts > localTs) {
+        const dec = await CRYPTO.decrypt(enc, APP.password);
+        if (dec) {
+          const pw = APP.password;
+          APP = {...APP, ...dec, password: pw};
+          localStorage.setItem('fo_data', enc);
+          localStorage.setItem('fo_ts', ts.toString());
+          const el = document.getElementById('sync-status');
+          if (el) el.textContent = 'Sincronizado · ' + new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+        }
+      }
+    } catch(e) {}
+  });
 }
 
 async function saveData() {
@@ -1108,35 +1213,26 @@ function startFirebaseSync() {
 
 // ══ STORAGE ═══════════════════════════════════════════════════
 async function doLogin() {
-  const senha = document.getElementById("login-password").value;
-
-  let email = "";
-
-  if (senha === "Andre123") {
-    email = "seu@email.com";
-  } else if (senha === "Bruna123") {
-    email = "bruna@email.com";
-  } else {
-    document.getElementById("login-error").style.display = "block";
-    return;
-  }
-
-  firebase.auth().signInWithEmailAndPassword(email, senha)
-    .then(() => {
-      showScreen('screen-app');
-    })
-    .catch((error) => {
-      alert(error.message);
-    });
-}
   const pw = document.getElementById('login-password').value;
   if (!pw) return;
   const btn = document.querySelector('#screen-login .btn-primary');
   if (btn) { btn.textContent = 'Entrando...'; btn.disabled = true; }
+
+  // Autentica no Firebase usando email derivado do hash da senha
+  // Isso não expõe a senha — o email é gerado a partir do hash
+  if (fbAuth) {
+    const enc = new TextEncoder();
+    const hashBuf = await crypto.subtle.digest('SHA-256', enc.encode(pw));
+    const hashHex = Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,20);
+    const fbEmail = `user_${hashHex}@brude.app`;
+    await fbSignIn(fbEmail, pw + '_fb');
+  }
+
   const ok = await loadData(pw);
   if (btn) { btn.textContent = 'Entrar'; btn.disabled = false; }
   if (!ok) {
     document.getElementById('login-error').style.display = 'block';
+    if (fbAuth) fbAuth.signOut();
     return;
   }
   document.getElementById('login-error').style.display = 'none';
@@ -1147,17 +1243,12 @@ async function doLogin() {
 document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 function doLogout() {
-  firebase.auth().signOut().then(() => {
-    showScreen('screen-login');
-  });
+  APP.password = '';
+  if (fbAuth) fbAuth.signOut();
+  if (fbListener) { fbListener(); fbListener = null; }
+  showScreen('screen-login');
+  document.getElementById('login-password').value = '';
 }
-  firebase.auth().onAuthStateChanged((user) => {
-  if (user) {
-    showScreen('screen-app');
-  } else {
-    showScreen('screen-login');
-  }
-});
 
 // ══ NAVIGATION ════════════════════════════════════════════════
 function showScreen(id) {
@@ -1824,17 +1915,4 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 </body>
-  <!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBcpl3TR6jIogLJDilRcYqGHPMsVCwNMsY",
-  authDomain: "brude-financas.firebaseapp.com",
-  projectId: "brude-financas",
-};
-
-firebase.initializeApp(firebaseConfig);
-</script>
 </html>
