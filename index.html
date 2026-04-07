@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://www.gstatic.com https://cdnjs.cloudflare.com https://*.firebaseapp.com https://*.firebaseio.com https://accounts.google.com https://www.googleapis.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta name="referrer" content="no-referrer">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f1117">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -505,7 +509,7 @@ h1,h2,h3{font-family:'DM Serif Display',serif}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3oD+sCoJrzXJ+yKqtkPsqIQRbwDTTR+lkWn0TkUsZpMuUMoNMnmaw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 'use strict';
 
@@ -1006,7 +1010,7 @@ function renderFixedCosts() {
   const el = document.getElementById('fixed-costs-list');
   if (!el) return;
   el.innerHTML = APP.fixedCosts.map(f =>
-    '<div class="fixed-item"><div class="fixed-dot" style="background:'+f.color+'"></div><div class="fixed-name">'+f.name+'</div><div class="fixed-val">'+fmt(f.val)+'</div></div>'
+    '<div class="fixed-item"><div class="fixed-dot" style="background:'+esc(f.color)+'"></div><div class="fixed-name">'+esc(f.name)+'</div><div class="fixed-val">'+fmt(f.val)+'</div></div>'
   ).join('');
 }
 
@@ -1015,8 +1019,8 @@ function renderFixoModal() {
   if (!el) return;
   el.innerHTML = APP.fixedCosts.map((f,i) =>
     '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'+
-    '<div style="width:8px;height:8px;border-radius:50%;background:'+f.color+';flex-shrink:0"></div>'+
-    '<div style="flex:1">'+f.name+'</div>'+
+    '<div style="width:8px;height:8px;border-radius:50%;background:'+esc(f.color)+';flex-shrink:0"></div>'+
+    '<div style="flex:1">'+esc(f.name)+'</div>'+
     '<input type="number" value="'+f.val+'" onchange="APP.fixedCosts['+i+'].val=parseFloat(this.value)||0;saveData();renderFixedCosts()" style="width:85px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;text-align:right;font-family:\'DM Sans\',sans-serif;outline:none">'+
     '<span onclick="removeFixo('+i+')" style="color:var(--muted2);cursor:pointer;font-size:18px;flex-shrink:0">×</span></div>'
   ).join('');
@@ -1106,8 +1110,8 @@ function renderLancamentos() {
     sorted.map(l=>
       '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:6px;font-size:12px">'+
       '<div style="width:6px;height:6px;border-radius:50%;background:'+(l.tipo==='gasto'?'#ef4444':'#22c55e')+';flex-shrink:0"></div>'+
-      '<div style="flex:1;min-width:0"><div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+l.desc+'</div>'+
-      '<div style="color:var(--muted);font-size:11px">'+l.cat+' · '+l.titular+' · '+l.data+'</div></div>'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(l.desc)+'</div>'+
+      '<div style="color:var(--muted);font-size:11px">'+esc(l.cat)+' · '+esc(l.titular)+' · '+esc(l.data)+'</div></div>'+
       '<div style="font-weight:600;color:'+(l.tipo==='gasto'?'#ef4444':'#22c55e')+';flex-shrink:0">'+(l.tipo==='gasto'?'−':'+')+' '+fmt(l.val)+'</div>'+
       '<span onclick="removerLancamento('+l.id+')" style="color:var(--muted2);cursor:pointer;font-size:18px;flex-shrink:0">×</span></div>'
     ).join('');
@@ -1275,6 +1279,16 @@ function renderCharts(){
 
 // ══ UTILS ═════════════════════════════════════════════════════
 function fmt(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR');}
+
+// Sanitiza strings para evitar XSS em innerHTML
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#x27;');
+}
 
 // ══ INIT ══════════════════════════════════════════════════════
 initFirebase();
